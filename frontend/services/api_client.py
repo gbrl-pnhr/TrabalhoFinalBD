@@ -3,6 +3,7 @@ import streamlit as st
 
 BASE_URL = "http://localhost:8000/api/v1"
 
+
 def get(endpoint):
     try:
         response = requests.get(f"{BASE_URL}/{endpoint}")
@@ -11,6 +12,7 @@ def get(endpoint):
     except requests.exceptions.RequestException as e:
         st.error(f"API Connection Error: {e}")
         return []
+
 
 def post(endpoint, data):
     try:

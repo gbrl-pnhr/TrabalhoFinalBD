@@ -5,14 +5,25 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "fastapi>=0.123.10",
     "psycopg>=3.3.1",
+    "psycopg2-binary>=2.9.11",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
     "streamlit>=1.52.1",
+    "uvicorn>=0.38.0",
+    "yoyo-migrations>=9.0.0",
 ]
 
 [dependency-groups]
 dev = [
+    "colorlog>=6.10.1",
     "honcho>=2.0.0",
+    "mypy>=1.19.0",
     "pandas-stubs>=2.3.3.251201",
+    "python-json-logger>=4.0.0",
+    "ruff>=0.14.8",
     "taskipy>=1.14.1",
 ]
 
@@ -20,5 +31,8 @@ dev = [
 dev = "honcho start"
 api = "uvicorn backend.main:app --reload --port 8000"
 ui = "streamlit run frontend/main.py --server.port 8501"
-migrate = "yoyo apply --database postgresql://user:pass@localhost/db ./db/migrations"
+migrate = "python db/scripts/migrate.py"
 seed = "python db/scripts/seed.py"
+
+[tool.mypy]
+strict = true

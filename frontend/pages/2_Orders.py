@@ -72,5 +72,5 @@ with tab_create:
         # (Assuming you do same for Tables and Waiters...)
 
         if st.form_submit_button("Open Order"):
-            create_order(customer_id=c_id, table_id=1, waiter_id=1) # Example
+            create_order(customer_id=c_id, table_id=1, waiter_id=1)  # Example
             st.success("Order Opened!")
