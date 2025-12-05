@@ -1,0 +1,24 @@
+[project]
+name = "RestauranteBD"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "psycopg>=3.3.1",
+    "streamlit>=1.52.1",
+]
+
+[dependency-groups]
+dev = [
+    "honcho>=2.0.0",
+    "pandas-stubs>=2.3.3.251201",
+    "taskipy>=1.14.1",
+]
+
+[tool.taskipy.tasks]
+dev = "honcho start"
+api = "uvicorn backend.main:app --reload --port 8000"
+ui = "streamlit run frontend/main.py --server.port 8501"
+migrate = "yoyo apply --database postgresql://user:pass@localhost/db ./db/migrations"
+seed = "python db/scripts/seed.py"

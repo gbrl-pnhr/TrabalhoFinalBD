@@ -1,7 +1,7 @@
 import streamlit as st
-import psycopg2
+import psycopg as psycopg2
 import pandas as pd
-from psycopg2 import OperationalError, errorcodes
+from psycopg import OperationalError
 
 # --- 1. CONFIGURAÇÃO DA CONEXÃO ---
 def get_connection():
@@ -9,7 +9,7 @@ def get_connection():
     try:
         conn = psycopg2.connect(
             host="localhost",
-            database="postgres",
+            database="restaurante",
             user="postgres",
             password="admin",
             port="5432",
@@ -143,11 +143,6 @@ def adicionar_cliente(nome, email, telefone):
             cursor.execute(query, (nome, email, telefone))
             conn.commit()
             st.success(f"Cliente {nome} cadastrado com sucesso!")
-        except psycopg2.IntegrityError as e:
-            if errorcodes.lookup(e.pgcode) == 'UNIQUE_VIOLATION':
-                st.error("Erro: Email já cadastrado. O email deve ser único.")
-            else:
-                st.error(f"Erro de integridade ao inserir: {e}")
         except Exception as e:
             st.error(f"Erro ao inserir: {e}")
         finally:
