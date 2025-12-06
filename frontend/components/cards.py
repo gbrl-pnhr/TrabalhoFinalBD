@@ -1,16 +1,15 @@
 import streamlit as st
 import pandas as pd
-from typing import Dict, Any
+from        schemas import OrderResponse
 
 
-def render_order_details(order: Dict[str, Any]):
+def render_order_details(order: OrderResponse):
     """
-    Renders the details of an order (Items Table).
+    Renders the details of an order (Items Table) using the Pydantic model.
     """
-    items = order.get("items", [])
-
+    items = order.items
     if items:
-        df_items = pd.DataFrame(items)
+        df_items = pd.DataFrame([item.model_dump() for item in items])
         cols = ["dish_name", "quantity", "unit_price", "subtotal"]
         display_cols = [c for c in cols if c in df_items.columns]
         st.dataframe(

@@ -45,6 +45,7 @@ __all__ = [
     "WaiterPerformance",
     "CustomerCreate",
     "CustomerResponse",
+    "OrderItemCreate",
     "DishCreate",
     "DishResponse",
     "OrderCreate",

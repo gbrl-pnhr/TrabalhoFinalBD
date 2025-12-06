@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from services.staff import StaffService
-from frontend.schemas import WaiterCreate, ChefCreate
+from schemas import WaiterCreate, ChefCreate
 from components.sidebar import render_sidebar
 from utils.exceptions import AppError
 

@@ -1,31 +1,15 @@
-from typing import List, Dict, Any
+from typing import List
 from services.api_client import APIClient
+from schemas import TableResponse, TableCreate
 
 class TableService:
-    """
-    Service layer for managing restaurant tables.
-    """
-
     def __init__(self):
         self.client = APIClient()
 
-    def get_tables(self) -> List[Dict[str, Any]]:
-        """
-        Get all registered tables.
+    def get_tables(self) -> List[TableResponse]:
+        data = self.client.get("/tables/")
+        return [TableResponse.model_validate(t) for t in data]
 
-        Returns:
-            List[Dict]: List of tables.
-        """
-        return self.client.get("/tables/")
-
-    def create_table(self, table_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Register a new table.
-
-        Args:
-            table_data (Dict): {number, capacity, location}
-
-        Returns:
-            Dict: Created table object.
-        """
-        return self.client.post("/tables/", table_data)
+    def create_table(self, table: TableCreate) -> TableResponse:
+        data = self.client.post("/tables/", table.model_dump())
+        return TableResponse.model_validate(data)

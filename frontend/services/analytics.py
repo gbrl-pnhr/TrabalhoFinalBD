@@ -1,37 +1,32 @@
-from typing import List, Dict, Any
+from typing import List
 from services.api_client import APIClient
+from schemas import DailyRevenue, DishPopularity, WaiterPerformance
 
 class AnalyticsService:
     """
-    Service layer for fetching business analytics.
+    Service layer for fetching business analytics using strict typing.
     """
 
     def __init__(self):
         self.client = APIClient()
 
-    def get_revenue_stats(self) -> List[Dict[str, Any]]:
+    def get_revenue_stats(self) -> List[DailyRevenue]:
         """
-        Fetch daily revenue statistics for the last 30 days.
-
-        Returns:
-            List[Dict]: A list of daily revenue records.
+        Fetch daily revenue statistics.
         """
-        return self.client.get("/analytics/revenue")
+        data = self.client.get("/analytics/revenue")
+        return [DailyRevenue.model_validate(item) for item in data]
 
-    def get_popular_dishes(self) -> List[Dict[str, Any]]:
+    def get_popular_dishes(self) -> List[DishPopularity]:
         """
         Fetch the top 10 most popular dishes.
-
-        Returns:
-            List[Dict]: A list of dish popularity records.
         """
-        return self.client.get("/analytics/popular-dishes")
+        data = self.client.get("/analytics/popular-dishes")
+        return [DishPopularity.model_validate(item) for item in data]
 
-    def get_staff_performance(self) -> List[Dict[str, Any]]:
+    def get_staff_performance(self) -> List[WaiterPerformance]:
         """
         Fetch performance stats for waiters.
-
-        Returns:
-            List[Dict]: A list of waiter performance records.
         """
-        return self.client.get("/analytics/staff-performance")
+        data = self.client.get("/analytics/staff-performance")
+        return [WaiterPerformance.model_validate(item) for item in data]

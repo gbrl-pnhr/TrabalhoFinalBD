@@ -1,8 +1,8 @@
 import logging
 import requests
 from typing import Any, Dict, Optional
-from frontend.config import settings
-from frontend.utils.exceptions import (
+from config import settings
+from utils.exceptions import (
     APIConnectionError,
     ResourceNotFoundError,
     ValidationError,

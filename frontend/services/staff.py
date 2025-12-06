@@ -1,6 +1,6 @@
 from typing import List
 from services.api_client import APIClient
-from frontend.schemas import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
+from schemas import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
 
 class StaffService:
     """

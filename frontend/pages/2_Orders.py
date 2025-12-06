@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
 import time
-from frontend.services.order import OrderService
-from frontend.services.customers import CustomerService
-from frontend.components.cards import render_order_details
-from frontend.components.forms import render_add_item_form, render_open_order_form
-from frontend.utils.exceptions import AppError
+from services.order import OrderService
+from services.customers import CustomerService
+from components.cards import render_order_details
+from components.forms import render_add_item_form, render_open_order_form
+from utils.exceptions import AppError
+from schemas import OrderCreate, OrderItemCreate
+
 order_service = OrderService()
 customer_service = CustomerService()
 
@@ -18,12 +20,15 @@ tab_view, tab_create = st.tabs(["Active Orders", "Open New Table"])
 def handle_add_item(order_id: int, dish_id: int, qty: int):
     """Controller function for adding items."""
     try:
-        order_service.add_item(order_id, {"dish_id": dish_id, "quantity": qty})
+        item_payload = OrderItemCreate(dish_id=dish_id, quantity=qty)
+        order_service.add_item(order_id, item_payload)
         st.toast(f"✅ Item added to Order #{order_id}!")
         time.sleep(0.5)
         st.rerun()
     except AppError as e:
         st.error(f"Failed to add item: {e}")
+    except ValueError as e:
+        st.error(f"Validation Error: {e}")
 
 
 with tab_view:
@@ -33,9 +38,11 @@ with tab_view:
         if not orders_data:
             st.info("No active orders found. Go to 'Open New Table' to start.")
         else:
-            df_orders = pd.DataFrame(orders_data)
+            df_orders = pd.DataFrame([o.model_dump() for o in orders_data])
+            cols = ["id", "customer_name", "table_number", "total_value"]
+            display_cols = [c for c in cols if c in df_orders.columns]
             st.dataframe(
-                df_orders[["id", "customer_name", "table_number", "total_value"]],
+                df_orders[display_cols],
                 use_container_width=True,
                 hide_index=True,
                 column_config={
@@ -45,20 +52,16 @@ with tab_view:
             st.markdown("---")
             st.subheader("Order Actions")
             for order in orders_data:
-                order_id = order.get("id")
-                customer = order.get("customer_name", "Unknown")
-                total = order.get("total_value", 0.0)
-                label = f"📋 Order #{order_id} | {customer} | ${total:,.2f}"
+                label = f"📋 Order #{order.id} | {order.customer_name or 'Unknown'} | ${order.total_value:,.2f}"
                 with st.expander(label, expanded=False):
                     render_order_details(order)
                     st.divider()
                     st.caption("Add Item to Order")
-                    form_data = render_add_item_form(order_id)
+                    form_data = render_add_item_form(order.id)
                     if form_data:
                         handle_add_item(
-                            order_id, form_data["dish_id"], form_data["quantity"]
+                            order.id, form_data["dish_id"], form_data["quantity"]
                         )
-
     except AppError as e:
         st.error(f"Error loading orders: {e}")
 
@@ -66,18 +69,24 @@ with tab_create:
     st.subheader("Open New Table")
     try:
         customers = customer_service.get_customers()
-        c_options = {c["id"]: c["name"] for c in customers}
+        c_options = {c.id: c.name for c in customers}
         submission_data = render_open_order_form(c_options)
         if submission_data:
             try:
-                order_service.create_order(submission_data)
-                st.success(
-                    f"✅ Table {submission_data['table_id']} Opened Successfully!"
+                new_order = OrderCreate(
+                    customer_id=submission_data["customer_id"],
+                    table_id=submission_data["table_id"],
+                    waiter_id=submission_data["waiter_id"],
+                    customer_count=submission_data["customer_count"],
                 )
+                order_service.create_order(new_order)
+                st.success(f"✅ Table {new_order.table_id} Opened Successfully!")
                 time.sleep(1)
                 st.rerun()
             except AppError as e:
                 st.error(f"Could not create order: {e}")
+            except ValueError as e:
+                st.error(f"Input Validation Error: {e}")
 
     except AppError as e:
         st.error(f"Could not load required data: {e}")

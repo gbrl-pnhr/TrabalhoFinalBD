@@ -3,6 +3,7 @@ import pandas as pd
 from services.menu import MenuService
 from components.forms import render_create_dish_form
 from utils.exceptions import AppError
+from schemas import DishCreate
 
 menu_service = MenuService()
 
@@ -14,7 +15,6 @@ tab_list, tab_create = st.tabs(["Menu List", "Create Dish"])
 
 @st.cache_data(ttl=300)
 def get_cached_menu():
-    """Cached fetch of menu items (5 min TTL)."""
     return menu_service.get_dishes()
 
 
@@ -24,11 +24,11 @@ with tab_list:
         if not dishes_data:
             st.info("No dishes found in the menu.")
         else:
-            df_dishes = pd.DataFrame(dishes_data)
+            df_dishes = pd.DataFrame([d.model_dump() for d in dishes_data])
             col1, _ = st.columns([1, 2])
             with col1:
                 search_term = st.text_input("🔍 Search Dish:", "").lower()
-            if search_term:
+            if search_term and not df_dishes.empty:
                 mask = df_dishes["name"].str.lower().str.contains(search_term)
                 df_dishes = df_dishes[mask]
             st.dataframe(
@@ -48,9 +48,16 @@ with tab_create:
     new_dish_data = render_create_dish_form()
     if new_dish_data:
         try:
-            menu_service.create_dish(new_dish_data)
-            st.success(f"✅ Dish '{new_dish_data['name']}' created successfully!")
+            dish_payload = DishCreate(
+                name=new_dish_data["name"],
+                price=new_dish_data["price"],
+                category=new_dish_data["category"]
+            )
+            menu_service.create_dish(dish_payload)
+            st.success(f"✅ Dish '{dish_payload.name}' created successfully!")
             st.cache_data.clear()
             st.rerun()
         except AppError as e:
             st.error(f"Failed to create dish: {e}")
+        except ValueError as e:
+            st.error(f"Validation Error: {e}")

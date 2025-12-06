@@ -7,8 +7,9 @@ from backend.modules import (
     WaiterResponse, WaiterCreate,
     ChefResponse, ChefCreate,
     DishResponse, DishCreate,
-    OrderResponse, OrderItemResponse, OrderCreate,
-    TableResponse,
-    CustomerResponse,
-    DailyRevenue, DishPopularity, WaiterPerformance
+    OrderResponse, OrderItemResponse, OrderCreate, OrderItemCreate,
+    TableResponse, TableCreate,
+    ReviewResponse, ReviewCreate,
+    CustomerResponse, CustomerCreate,
+    DailyRevenue, DishPopularity, WaiterPerformance,
 )

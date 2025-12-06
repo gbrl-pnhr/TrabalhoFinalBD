@@ -74,15 +74,14 @@ def render_open_order_form(
             )
         with c2:
             table_id = st.number_input("Table Number", min_value=1, step=1)
-
         waiter_id = st.number_input("Waiter ID", min_value=1, step=1)
-
+        customer_count = st.number_input("Waiter ID", min_value=1, step=1)
         st.markdown("---")
         if st.form_submit_button("Open Table", use_container_width=True):
             return {
                 "customer_id": c_id,
                 "table_id": table_id,
                 "waiter_id": waiter_id,
-                "status": "OPEN",
+                "customer_count": customer_count,
             }
     return None

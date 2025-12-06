@@ -14,10 +14,6 @@ st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
 @st.cache_data(ttl=60, show_spinner="Fetching latest analytics...")
 def load_dashboard_data():
-    """
-    Fetches data from backend with a 60-second cache.
-    The Service is instantiated inside to ensure thread safety with Streamlit caching.
-    """
     analytics_service = AnalyticsService()
     try:
         revenue = analytics_service.get_revenue_stats()

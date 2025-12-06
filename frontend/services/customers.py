@@ -1,31 +1,15 @@
-from typing import List, Dict, Any
+from typing import List
 from services.api_client import APIClient
+from schemas import CustomerResponse, CustomerCreate
 
 class CustomerService:
-    """
-    Service layer for managing customers.
-    """
-
     def __init__(self):
         self.client = APIClient()
 
-    def get_customers(self) -> List[Dict[str, Any]]:
-        """
-        Get all registered customers.
+    def get_customers(self) -> List[CustomerResponse]:
+        data = self.client.get("/customers/")
+        return [CustomerResponse.model_validate(c) for c in data]
 
-        Returns:
-            List[Dict]: List of customers.
-        """
-        return self.client.get("/customers/")
-
-    def create_customer(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Register a new customer.
-
-        Args:
-            customer_data (Dict): {name, email, phone}
-
-        Returns:
-            Dict: Created customer object.
-        """
-        return self.client.post("/customers/", customer_data)
+    def create_customer(self, customer: CustomerCreate) -> CustomerResponse:
+        data = self.client.post("/customers/", customer.model_dump())
+        return CustomerResponse.model_validate(data)
