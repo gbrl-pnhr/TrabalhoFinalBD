@@ -2,11 +2,7 @@ import streamlit as st
 import pandas as pd
 from services.customers import CustomerService
 from schemas import CustomerCreate
-from components.sidebar import render_sidebar
 from utils.exceptions import AppError
-
-st.set_page_config(page_title="Customers", page_icon="👥", layout="wide")
-render_sidebar("Customers")
 
 customer_service = CustomerService()
 

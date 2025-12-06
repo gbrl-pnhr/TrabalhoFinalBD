@@ -4,15 +4,10 @@ import pandas as pd
 from services.reviews import ReviewService
 from services.menu import MenuService
 from services.customers import CustomerService
-from services.order import OrderService  # Added OrderService
+from services.order import OrderService
 from schemas import ReviewCreate, ReviewUpdate
-from components.sidebar import render_sidebar
 from utils.exceptions import AppError
 
-st.set_page_config(page_title="Reviews", page_icon="⭐", layout="wide")
-render_sidebar("Reviews")
-
-# Initialize Services
 review_service = ReviewService()
 menu_service = MenuService()
 customer_service = CustomerService()
@@ -22,7 +17,6 @@ st.title("⭐ Feedback & Reviews")
 
 tab_view, tab_write = st.tabs(["Dish Reviews (Admin Mode)", "New Review Wizard"])
 
-# --- Load Common Data ---
 try:
     dishes = menu_service.get_dishes()
     customers = customer_service.get_customers()

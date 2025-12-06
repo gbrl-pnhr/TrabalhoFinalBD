@@ -2,11 +2,8 @@ import streamlit as st
 import time
 from services.order import OrderService
 from components.cards import render_kitchen_ticket
-from components.sidebar import render_sidebar
 from utils.exceptions import AppError
 
-st.set_page_config(page_title="Kitchen Display", page_icon="🍳", layout="wide")
-render_sidebar("Kitchen Display")
 st.title("🍳 Kitchen Display System (KDS)")
 order_service = OrderService()
 
@@ -14,7 +11,6 @@ if "last_refresh" not in st.session_state:
     st.session_state.last_refresh = time.time()
 
 REFRESH_INTERVAL = 30
-
 
 def get_active_orders():
     """Fetch orders that are not closed."""

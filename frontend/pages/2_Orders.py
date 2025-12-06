@@ -15,11 +15,9 @@ customer_service = CustomerService()
 table_service = TableService()
 staff_service = StaffService()
 
-st.set_page_config(page_title="Orders", page_icon="📝", layout="wide")
 st.header("📝 Order Management")
 
 tab_view, tab_create = st.tabs(["Active Orders", "Open New Table"])
-
 
 def handle_add_item(order_id: int, dish_id: int, qty: int):
     try:
@@ -33,7 +31,6 @@ def handle_add_item(order_id: int, dish_id: int, qty: int):
     except ValueError as e:
         st.error(f"Validation Error: {e}")
 
-
 def handle_remove_item(order_id: int, item_id: int):
     try:
         order_service.remove_item(order_id, item_id)
@@ -42,7 +39,6 @@ def handle_remove_item(order_id: int, item_id: int):
         st.rerun()
     except AppError as e:
         st.error(f"Failed to remove item: {e}")
-
 
 with tab_view:
     try:

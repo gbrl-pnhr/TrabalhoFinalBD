@@ -2,12 +2,8 @@ import streamlit as st
 import time
 from services.staff import StaffService
 from schemas import WaiterCreate, ChefCreate
-from components.sidebar import render_sidebar
 from utils.exceptions import AppError
 
-st.set_page_config(page_title="Staff Management", page_icon="👨‍🍳", layout="wide")
-
-render_sidebar("Staff Management")
 staff_service = StaffService()
 st.title("👨‍🍳 Staff Management")
 

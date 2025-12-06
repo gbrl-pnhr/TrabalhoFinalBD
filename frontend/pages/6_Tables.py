@@ -2,11 +2,7 @@ import streamlit as st
 import pandas as pd
 from services.tables import TableService
 from schemas import TableCreate
-from components.sidebar import render_sidebar
 from utils.exceptions import AppError
-
-st.set_page_config(page_title="Tables", page_icon="🪑", layout="wide")
-render_sidebar("Tables")
 
 table_service = TableService()
 

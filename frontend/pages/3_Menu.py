@@ -8,18 +8,15 @@ from schemas import DishCreate, DishUpdate
 
 menu_service = MenuService()
 
-st.set_page_config(page_title="Menu", page_icon="🍴", layout="wide")
 st.header("🍴 Menu Management")
 
 tab_list, tab_create, tab_manage = st.tabs(
     ["Menu List", "Create Dish", "Manage (Edit/Delete)"]
 )
 
-
 @st.cache_data(ttl=300)
 def get_cached_menu():
     return menu_service.get_dishes()
-
 
 with tab_list:
     try:

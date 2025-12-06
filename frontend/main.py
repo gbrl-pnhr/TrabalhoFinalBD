@@ -1,9 +1,9 @@
 import sys
 from pathlib import Path
-ROOT_PATH = Path(__file__).parent.parent
-sys.path.append(str(ROOT_PATH))
-
 import streamlit as st
+ROOT_PATH = Path(__file__).parent
+sys.path.append(str(ROOT_PATH))
+from components.sidebar import render_global_sidebar
 
 st.set_page_config(
     page_title="Restaurant Manager",
@@ -11,20 +11,24 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🍽️ Restaurant Management System")
-st.image("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80", width='stretch')
+pages_structure = {
+    "Analytics": [
+        st.Page("pages/1_Dashboard.py", title="Dashboard", icon="📊", default=True),
+    ],
+    "Operations": [
+        st.Page("pages/2_Orders.py", title="Active Orders", icon="📝"),
+        st.Page("pages/8_Kitchen.py", title="Kitchen Display", icon="🍳"),
+    ],
+    "Management": [
+        st.Page("pages/3_Menu.py", title="Menu Management", icon="🍴"),
+        st.Page("pages/6_Tables.py", title="Table Layout", icon="🪑"),
+        st.Page("pages/4_Staff.py", title="Staff", icon="👨‍🍳"),
+        st.Page("pages/5_Customers.py", title="Customers", icon="👥"),
+        st.Page("pages/7_Reviews.py", title="Reviews", icon="⭐"),
+    ]
+}
 
-st.markdown("""
-### Welcome to the Management Portal
+render_global_sidebar(pages_structure)
 
-Use the sidebar menu to navigate through the modules:
-
-1.  **Dashboard**: View real-time analytics on revenue and staff.
-2.  **Orders**: Manage active tables and open orders.
-3.  **Menu**: Create and edit dishes.
-4.  **Staff**: Manage waiters and chefs.
-
-**System Status:**
-- Frontend: ✅ Online
-- Backend Connection: (Check Dashboard)
-""")
+pg = st.navigation(pages_structure, position="hidden")
+pg.run()

@@ -9,8 +9,6 @@ from components.dashboard_ui import (
     render_staff_table,
 )
 
-st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
-
 
 @st.cache_data(ttl=60, show_spinner="Fetching latest analytics...")
 def load_dashboard_data():
@@ -24,7 +22,6 @@ def load_dashboard_data():
         return None, None, None
     except Exception as e:
         return "error", str(e), None
-
 
 def main():
     st.title("📊 Manager Dashboard")
@@ -52,5 +49,4 @@ def main():
         st.cache_data.clear()
         st.rerun()
 
-if __name__ == "__main__":
-    main()
+main()
