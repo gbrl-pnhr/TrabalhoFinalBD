@@ -6,7 +6,7 @@ from backend.modules.menu.models import DishCreate, DishResponse
 from backend.modules.menu.repository import MenuRepository
 
 router = APIRouter(prefix="/menu", tags=["Menu"])
-logger = logging.getLogger("api.router.menu")
+logger = logging.getLogger(__name__)
 
 def get_repository(conn = Depends(get_db_connection)):
     return MenuRepository(conn)

@@ -7,6 +7,8 @@ from backend.core.config import settings
 from backend.core.logging_config import setup_logging
 from backend.core.database import create_pool
 from backend.modules.menu.router import router as menu_router
+from backend.modules.customers.router import router as customer_router
+
 setup_logging()
 logger = logging.getLogger("api.main")
 
@@ -43,6 +45,7 @@ app.add_middleware(
 )
 
 app.include_router(menu_router, prefix=settings.API_V1_STR)
+app.include_router(customer_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")
