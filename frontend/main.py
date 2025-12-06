@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+ROOT_PATH = Path(__file__).parent.parent
+sys.path.append(str(ROOT_PATH))
+
 import streamlit as st
 
 st.set_page_config(

@@ -1,5 +1,6 @@
-from typing import List, Dict, Any
+from typing import List
 from services.api_client import APIClient
+from frontend.schemas import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
 
 class StaffService:
     """
@@ -9,44 +10,22 @@ class StaffService:
     def __init__(self):
         self.client = APIClient()
 
-    def get_waiters(self) -> List[Dict[str, Any]]:
-        """
-        List all registered waiters.
+    def get_waiters(self) -> List[WaiterResponse]:
+        """List all registered waiters."""
+        data = self.client.get("/staff/waiters")
+        return [WaiterResponse.model_validate(item) for item in data]
 
-        Returns:
-            List[Dict]: List of waiters.
-        """
-        return self.client.get("/staff/waiters")
+    def create_waiter(self, waiter_data: WaiterCreate) -> WaiterResponse:
+        """Register a new waiter."""
+        response = self.client.post("/staff/waiters", waiter_data.model_dump())
+        return WaiterResponse.model_validate(response)
 
-    def create_waiter(self, waiter_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Register a new waiter.
+    def get_chefs(self) -> List[ChefResponse]:
+        """List all registered chefs."""
+        data = self.client.get("/staff/chefs")
+        return [ChefResponse.model_validate(item) for item in data]
 
-        Args:
-            waiter_data (Dict): {name, cpf, hire_date}
-
-        Returns:
-            Dict: Created waiter object.
-        """
-        return self.client.post("/staff/waiters", waiter_data)
-
-    def get_chefs(self) -> List[Dict[str, Any]]:
-        """
-        List all registered chefs.
-
-        Returns:
-            List[Dict]: List of chefs.
-        """
-        return self.client.get("/staff/chefs")
-
-    def create_chef(self, chef_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Register a new chef.
-
-        Args:
-            chef_data (Dict): {name, cpf, hire_date, specialty}
-
-        Returns:
-            Dict: Created chef object.
-        """
-        return self.client.post("/staff/chefs", chef_data)
+    def create_chef(self, chef_data: ChefCreate) -> ChefResponse:
+        """Register a new chef."""
+        response = self.client.post("/staff/chefs", chef_data.model_dump())
+        return ChefResponse.model_validate(response)
