@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from frontend.services.api_client import APIClient
+from services.api_client import APIClient
 
 class TableService:
     """

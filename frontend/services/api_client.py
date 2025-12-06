@@ -1,6 +1,13 @@
 import logging
 import requests
 from typing import Any, Dict, Optional
+from config import settings
+from utils.exceptions import (
+    APIConnectionError,
+    ResourceNotFoundError,
+    ValidationError,
+    AppError,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("frontend.api_client")
@@ -9,17 +16,12 @@ logger = logging.getLogger("frontend.api_client")
 class APIClient:
     """
     A wrapper class for handling HTTP requests to the Backend API.
-    Handles base URL management, common headers, and error logging.
+    Uses centralized configuration and specific exception handling.
     """
 
-    def __init__(self, base_url: str = "http://localhost:8000/api/v1"):
-        """
-        Initialize the API Client.
-
-        Args:
-            base_url (str): The root URL of the API. Defaults to local dev server.
-        """
-        self.base_url = base_url.rstrip("/")
+    def __init__(self):
+        """Initialize the API Client using settings."""
+        self.base_url = settings.API_BASE_URL.rstrip("/")
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -28,35 +30,31 @@ class APIClient:
     def _handle_response(self, response: requests.Response) -> Any:
         """
         Internal method to process the response.
-
-        Args:
-            response (requests.Response): The raw HTTP response object.
-
-        Returns:
-            Any: Parsed JSON data if successful.
-
-        Raises:
-            Exception: If the status code indicates failure (4xx, 5xx).
+        Raises specific typed exceptions based on status codes.
         """
         try:
             response.raise_for_status()
             if response.status_code == 204:
                 return None
             return response.json()
-        except requests.exceptions.HTTPError as http_err:
-            error_msg = f"HTTP Error: {http_err}"
-            try:
-                detail = response.json().get("detail")
-                if detail:
-                    error_msg = f"API Error: {detail}"
-            except Exception:
-                pass
 
-            logger.error(error_msg)
-            raise Exception(error_msg)
+        except requests.exceptions.HTTPError as http_err:
+            status = response.status_code
+            try:
+                error_detail = response.json().get("detail", str(http_err))
+            except Exception:
+                error_detail = str(http_err)
+            logger.error(f"API Error ({status}): {error_detail}")
+            if status == 404:
+                raise ResourceNotFoundError(f"Resource not found: {error_detail}")
+            elif status in (400, 422):
+                raise ValidationError(f"Validation error: {error_detail}")
+            else:
+                raise AppError(f"Server error ({status}): {error_detail}")
+
         except Exception as err:
-            logger.error(f"Unexpected Error: {err}")
-            raise Exception(f"An unexpected error occurred: {err}")
+            logger.error(f"Unexpected Error processing response: {err}")
+            raise AppError(f"An unexpected error occurred: {err}")
 
     def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """
@@ -72,10 +70,15 @@ class APIClient:
         url = f"{self.base_url}{endpoint}"
         logger.info(f"GET {url}")
         try:
-            response = requests.get(url, headers=self.headers, params=params)
+            response = requests.get(
+                url, headers=self.headers, params=params, timeout=10
+            )
             return self._handle_response(response)
-        except requests.exceptions.ConnectionError:
-            raise Exception("Failed to connect to the backend server. Is it running?")
+        except requests.exceptions.ConnectionError as e:
+            logger.critical(f"Connection failed: {url}")
+            raise APIConnectionError(
+                "Could not connect to the backend server.", original_error=e
+            )
 
     def post(self, endpoint: str, data: Dict[str, Any]) -> Any:
         """
@@ -90,8 +93,13 @@ class APIClient:
         """
         url = f"{self.base_url}{endpoint}"
         logger.info(f"POST {url}")
-        response = requests.post(url, headers=self.headers, json=data)
-        return self._handle_response(response)
+        try:
+            response = requests.post(url, headers=self.headers, json=data, timeout=10)
+            return self._handle_response(response)
+        except requests.exceptions.ConnectionError as e:
+            raise APIConnectionError(
+                "Could not connect to the backend server.", original_error=e
+            )
 
     def patch(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
         """
@@ -106,8 +114,15 @@ class APIClient:
         """
         url = f"{self.base_url}{endpoint}"
         logger.info(f"PATCH {url}")
-        response = requests.patch(url, headers=self.headers, json=data or {})
-        return self._handle_response(response)
+        try:
+            response = requests.patch(
+                url, headers=self.headers, json=data or {}, timeout=10
+            )
+            return self._handle_response(response)
+        except requests.exceptions.ConnectionError as e:
+            raise APIConnectionError(
+                "Could not connect to the backend server.", original_error=e
+            )
 
     def delete(self, endpoint: str) -> Any:
         """
@@ -121,5 +136,10 @@ class APIClient:
         """
         url = f"{self.base_url}{endpoint}"
         logger.info(f"DELETE {url}")
-        response = requests.delete(url, headers=self.headers)
-        return self._handle_response(response)
+        try:
+            response = requests.delete(url, headers=self.headers, timeout=10)
+            return self._handle_response(response)
+        except requests.exceptions.ConnectionError as e:
+            raise APIConnectionError(
+                "Could not connect to the backend server.", original_error=e
+            )

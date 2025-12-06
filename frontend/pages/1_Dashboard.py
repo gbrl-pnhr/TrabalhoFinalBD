@@ -1,5 +1,7 @@
 import streamlit as st
 from services.analytics import AnalyticsService
+from utils.calculations import calculate_revenue_metrics
+from utils.exceptions import APIConnectionError
 from components.dashboard_ui import (
     render_kpi_metrics,
     render_revenue_chart,
@@ -7,59 +9,51 @@ from components.dashboard_ui import (
     render_staff_table,
 )
 
-# Page Config
 st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
 
-def load_data():
+@st.cache_data(ttl=60, show_spinner="Fetching latest analytics...")
+def load_dashboard_data():
     """
-    Aggregates data fetching.
-    In a real scenario, this might use st.cache_data for performance.
+    Fetches data from backend with a 60-second cache.
+    The Service is instantiated inside to ensure thread safety with Streamlit caching.
     """
-    with st.spinner("Fetching latest analytics..."):
-        # We fetch all necessary data here
-        # Failure in one shouldn't crash the others ideally,
-        # but for simplicity we fetch sequentially.
-        revenue = AnalyticsService.get_revenue_stats()
-        dishes = AnalyticsService.get_popular_dishes()
-        staff = AnalyticsService.get_staff_performance()
-
-        # Simulate a slight delay for UX (remove in production)
-        # time.sleep(0.5)
-
+    analytics_service = AnalyticsService()
+    try:
+        revenue = analytics_service.get_revenue_stats()
+        dishes = analytics_service.get_popular_dishes()
+        staff = analytics_service.get_staff_performance()
         return revenue, dishes, staff
+    except APIConnectionError:
+        return None, None, None
+    except Exception as e:
+        return "error", str(e), None
 
 
 def main():
     st.title("📊 Manager Dashboard")
-    st.markdown("Real-time overview of restaurant performance.")
-
-    # 1. Load Data
-    revenue_data, dish_data, staff_data = load_data()
-
-    # 2. Render Top KPIs
-    render_kpi_metrics(revenue_data)
-
+    revenue_data, dish_data, staff_data = load_dashboard_data()
+    if revenue_data is None:
+        st.error("⚠️ Backend is offline. Please check your connection.")
+        if st.button("Retry Connection"):
+            st.cache_data.clear()
+            st.rerun()
+        return
+    elif revenue_data == "error":
+        st.error(f"⚠️ Error loading data: {dish_data}")
+        return
+    total_rev, avg_rev, count = calculate_revenue_metrics(revenue_data)
+    render_kpi_metrics(total_rev, avg_rev, count)
     st.divider()
-
-    # 3. Render Charts Layout
     col_left, col_right = st.columns([2, 1])
-
     with col_left:
-        # Revenue Chart
         render_revenue_chart(revenue_data)
-
     with col_right:
-        # Top Dishes
         render_popular_dishes_chart(dish_data)
-
     st.divider()
-
-    # 4. Render Staff Table
     render_staff_table(staff_data)
-
-    # Refresh Button
-    if st.button("Refresh Data"):
+    if st.button("🔄 Refresh Data"):
+        st.cache_data.clear()
         st.rerun()
 
 if __name__ == "__main__":
