@@ -41,6 +41,7 @@ reset = "python db/scripts/reset.py"
 generate_seeds = "python db/scripts/generate_seed_sql.py"
 apply_seeds = "python db/scripts/seed.py"
 seed = "task generate_seeds && task apply_seeds"
+kill_streamlit = "for /f \"tokens=5\" %a in ('netstat -aon ^| find \":8501\" ^| find \"LISTENING\"') do taskkill /f /pid %a"
 
 [tool.mypy]
 strict = true
