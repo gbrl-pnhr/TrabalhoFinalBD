@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date as date_type
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class DailyRevenue(BaseModel):
     """Schema for daily revenue aggregation."""
 
-    date: date = Field(..., description="Date of sales")
+    date: date_type = Field(..., description="Date of sales")
     total_revenue: Decimal = Field(..., description="Total revenue for that day")
     order_count: int = Field(..., description="Number of orders placed")
     model_config = ConfigDict(from_attributes=True)

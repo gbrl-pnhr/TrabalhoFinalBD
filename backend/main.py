@@ -12,7 +12,7 @@ from backend.modules.tables.router import router as table_router
 from backend.modules.staff.routers import router as staff_router
 from backend.modules.orders.router import router as order_router
 from backend.modules.reviews.router import router as review_router
-from backend.modules.analytics.router import router as analytics_router # <--- Added Import
+from backend.modules.analytics.router import router as analytics_router
 
 setup_logging()
 logger = logging.getLogger("api.main")
