@@ -9,6 +9,7 @@ from backend.core.database import create_pool
 from backend.modules.menu.router import router as menu_router
 from backend.modules.customers.router import router as customer_router
 from backend.modules.tables.router import router as table_router
+from backend.modules.staff.routers import router as staff_router
 
 setup_logging()
 logger = logging.getLogger("api.main")
@@ -18,10 +19,6 @@ class StateFastAPI(FastAPI):
 
 @asynccontextmanager
 async def lifespan(application: StateFastAPI):
-    """
-    Handles startup and shutdown events.
-    The 'app' argument is injected by FastAPI and is crucial for state management.
-    """
     logger.info("Application starting up...")
     application.state.pool = create_pool()
     yield
@@ -29,7 +26,6 @@ async def lifespan(application: StateFastAPI):
     if hasattr(application.state, "pool"):
         application.state.pool.close()
         logger.info("Database connection pool closed.")
-
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -48,15 +44,12 @@ app.add_middleware(
 app.include_router(menu_router, prefix=settings.API_V1_STR)
 app.include_router(customer_router, prefix=settings.API_V1_STR)
 app.include_router(table_router, prefix=settings.API_V1_STR)
-
+app.include_router(staff_router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():
-    """Simple health check endpoint."""
     return {"status": "ok", "app": settings.PROJECT_NAME}
-
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
