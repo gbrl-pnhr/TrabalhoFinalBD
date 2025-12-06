@@ -1,0 +1,7 @@
+[project]
+name = "common"
+version = "1.0.0"
+dependencies = [
+    "colorlog>=6.0.0",
+    "python-json-logger>=2.0.0"
+]

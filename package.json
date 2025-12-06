@@ -1,0 +1,23 @@
+{
+  "name": "trabalhofinalbd",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:api": "turbo dev --filter=api",
+    "dev:ui": "turbo dev --filter=ui",
+    "format": "ruff format .",
+    "lint": "ruff check .",
+    "lint:fix": "ruff check --fix .",
+    "typecheck": "mypy .",
+    "db:migrate": "dotenv -e .env -- uv run python -m db.cli migrate",
+    "db:reset": "dotenv -e .env -- uv run python -m db.cli reset --force",
+    "db:generate-seeds": "dotenv -e .env -- uv run python -m db.cli generate-seeds",
+    "db:seed": "dotenv -e .env -- uv run python -m db.cli seed",
+    "db:full-reset": "npm run db:reset && npm run db:migrate && npm run db:seed",
+    "clean": "rmdir /s /q .turbo node_modules"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "turbo": "^2.6.3"
+  }
+}

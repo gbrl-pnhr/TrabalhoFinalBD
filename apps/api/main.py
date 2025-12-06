@@ -1,0 +1,62 @@
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from apps.api.core.config import settings
+from apps.api.core.database import create_pool
+from apps.api.modules.menu.router import router as menu_router
+from apps.api.modules.customers.router import router as customer_router
+from apps.api.modules.tables.router import router as table_router
+from apps.api.modules.staff.routers import router as staff_router
+from apps.api.modules.orders.router import router as order_router
+from apps.api.modules.reviews.router import router as review_router
+from apps.api.modules.analytics.router import router as analytics_router
+from packages.common.src.log_config import setup_logging
+
+setup_logging(app_name="api", log_dir=Path("logs"))
+logger = logging.getLogger("api.main")
+
+class StateFastAPI(FastAPI):
+    state: dict[str, Any]
+
+@asynccontextmanager
+async def lifespan(application: StateFastAPI):
+    logger.info("Application starting up...")
+    application.state.pool = create_pool()
+    yield
+    logger.info("Application shutting down...")
+    if hasattr(application.state, "pool"):
+        application.state.pool.close()
+        logger.info("Database connection pool closed.")
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(menu_router, prefix=settings.API_V1_STR)
+app.include_router(customer_router, prefix=settings.API_V1_STR)
+app.include_router(table_router, prefix=settings.API_V1_STR)
+app.include_router(staff_router, prefix=settings.API_V1_STR)
+app.include_router(order_router, prefix=settings.API_V1_STR)
+app.include_router(review_router, prefix=settings.API_V1_STR)
+app.include_router(analytics_router, prefix=settings.API_V1_STR)
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "app": settings.PROJECT_NAME}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "fastapi>=0.123.10",
+    "fastapi>=0.124.0",
     "psycopg[binary,pool]>=3.3.1",
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.5",
@@ -19,29 +19,24 @@ dependencies = [
     "validate-docbr>=1.11.1",
     "faker>=38.2.0",
     "plotly>=6.5.0",
+    "common",
+    "db",
 ]
 
 [dependency-groups]
 dev = [
     "colorlog>=6.10.1",
-    "honcho>=2.0.0",
     "mypy>=1.19.0",
     "pandas-stubs>=2.3.3.251201",
     "python-json-logger>=4.0.0",
     "ruff>=0.14.8",
-    "taskipy>=1.14.1",
 ]
 
-[tool.taskipy.tasks]
-dev = "honcho start"
-api = "uvicorn backend.main:app --reload --port 8000"
-ui = "streamlit run frontend/main.py --server.port 8501"
-migrate = "python db/scripts/migrate.py"
-reset = "python db/scripts/reset.py"
-generate_seeds = "python db/scripts/generate_seed_sql.py"
-apply_seeds = "python db/scripts/seed.py"
-seed = "task generate_seeds && task apply_seeds"
-kill_streamlit = "for /f \"tokens=5\" %a in ('netstat -aon ^| find \":8501\" ^| find \"LISTENING\"') do taskkill /f /pid %a"
+[tool.uv.workspace]
+members = ["packages/db"]
+
+[tool.uv.sources]
+db = { workspace = true }
 
 [tool.mypy]
 strict = true

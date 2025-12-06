@@ -1,0 +1,8 @@
+{
+  "name": "ui",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "streamlit run main.py --server.port=8501 --server.headless=true --server.fileWatcherType=none"
+  }
+}
