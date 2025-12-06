@@ -37,7 +37,7 @@ def render_revenue_chart(revenue_data: List[DailyRevenue]):
         title="Daily Revenue",
         labels={"total_revenue": "Revenue ($)", "date": "Date"},
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_popular_dishes_chart(dish_data: List[DishPopularity]):
@@ -59,7 +59,7 @@ def render_popular_dishes_chart(dish_data: List[DishPopularity]):
         color_continuous_scale="Viridis",
     )
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
 
 def render_staff_table(staff_data: List[WaiterPerformance]):
@@ -68,4 +68,4 @@ def render_staff_table(staff_data: List[WaiterPerformance]):
         st.info("No staff records found.")
         return
     df = pd.DataFrame([s.model_dump() for s in staff_data])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width='stretch', hide_index=True)

@@ -30,7 +30,7 @@ with tab_list:
             df_dishes = pd.DataFrame([d.model_dump() for d in dishes_data])
             st.dataframe(
                 df_dishes,
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
                 column_config={"price": st.column_config.NumberColumn(format="$%.2f")},
             )

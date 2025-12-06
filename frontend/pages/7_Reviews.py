@@ -160,7 +160,7 @@ with tab_write:
                                 rating = st.slider("Rating", 1, 5, 5)
                                 comment = st.text_area("Comment", "Delicious!")
                                 if st.form_submit_button(
-                                    "✅ Post Verified Review", use_container_width=True
+                                    "✅ Post Verified Review", width='stretch'
                                 ):
                                     try:
                                         payload = ReviewCreate(

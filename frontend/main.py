@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 st.title("🍽️ Restaurant Management System")
-st.image("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80", use_container_width=True)
+st.image("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80", width='stretch')
 
 st.markdown("""
 ### Welcome to the Management Portal

@@ -46,7 +46,7 @@ def render_create_dish_form() -> Optional[Dict[str, Any]]:
                 "Category", ["Appetizer", "Main Course", "Dessert", "Beverage", "Side"]
             )
 
-        if st.form_submit_button("Create Dish", use_container_width=True):
+        if st.form_submit_button("Create Dish", width='stretch'):
             if not name:
                 st.error("Dish name is required.")
                 return None
@@ -77,7 +77,7 @@ def render_open_order_form(
         waiter_id = st.number_input("Waiter ID", min_value=1, step=1)
         customer_count = st.number_input("Waiter ID", min_value=1, step=1)
         st.markdown("---")
-        if st.form_submit_button("Open Table", use_container_width=True):
+        if st.form_submit_button("Open Table", width='stretch'):
             return {
                 "customer_id": c_id,
                 "table_id": table_id,

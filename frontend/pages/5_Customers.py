@@ -28,7 +28,7 @@ with tab_list:
 
             st.dataframe(
                 df[display_cols],
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
                 column_config={
                     "id": "ID",
@@ -50,7 +50,7 @@ with tab_create:
             email = st.text_input("Email Address")
         with col2:
             phone = st.text_input("Phone Number (Optional)")
-        if st.form_submit_button("Register Customer", use_container_width=True):
+        if st.form_submit_button("Register Customer", width='stretch'):
             if not name or not email:
                 st.error("Name and Email are required.")
             else:

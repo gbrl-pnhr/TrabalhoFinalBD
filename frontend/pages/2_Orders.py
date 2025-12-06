@@ -60,7 +60,7 @@ with tab_view:
             display_cols = [c for c in cols if c in df_orders.columns]
             st.dataframe(
                 df_orders[display_cols],
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
                 column_config={
                     "total_value": st.column_config.NumberColumn(format="$%.2f")

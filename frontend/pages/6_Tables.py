@@ -25,7 +25,7 @@ with col_view:
             df = pd.DataFrame([t.model_dump() for t in tables])
             st.dataframe(
                 df,
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
                 column_config={
                     "id": "Table #",
@@ -43,7 +43,7 @@ with col_add:
         location = st.text_input("Location (e.g. Patio, Main Hall)", value="Main Hall")
         number = st.number_input("Visible Table Numer", min_value=1)
 
-        if st.form_submit_button("Add Table", use_container_width=True):
+        if st.form_submit_button("Add Table", width='stretch'):
             try:
                 payload = TableCreate(capacity=capacity, location=location, number=number)
                 table_service.create_table(payload)

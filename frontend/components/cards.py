@@ -15,7 +15,7 @@ def render_order_details(order: OrderResponse):
         display_cols = [c for c in cols if c in df_items.columns]
         st.dataframe(
             df_items[display_cols],
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             column_config={
                 "unit_price": st.column_config.NumberColumn(format="$%.2f"),
