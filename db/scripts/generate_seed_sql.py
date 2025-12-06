@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta
 from faker import Faker
 
-OUTPUT_DIR = "db/seeds"
+OUTPUT_DIR = "../seeds"
 START_DATE = datetime(2025, 11, 1)
 END_DATE = datetime(2025, 12, 5)
 

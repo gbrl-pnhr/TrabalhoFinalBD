@@ -52,16 +52,40 @@ with tab_view:
             st.markdown("---")
             st.subheader("Order Actions")
             for order in orders_data:
-                label = f"📋 Order #{order.id} | {order.customer_name or 'Unknown'} | ${order.total_value:,.2f}"
+                label = f"📋 Order #{order.id} | {order.customer_name or 'Unknown'} | ${order.total_value:,.2f} | Status: {order.status}"
+                is_closed = str(order.status).lower() in ["closed", "completed", "paid"]
                 with st.expander(label, expanded=False):
                     render_order_details(order)
                     st.divider()
-                    st.caption("Add Item to Order")
-                    form_data = render_add_item_form(order.id)
-                    if form_data:
-                        handle_add_item(
-                            order.id, form_data["dish_id"], form_data["quantity"]
-                        )
+                    if not is_closed:
+                        col_act1, col_act2 = st.columns([3, 1])
+                        with col_act1:
+                            st.caption("Add Item to Order")
+                            form_data = render_add_item_form(order.id)
+                            if form_data:
+                                handle_add_item(
+                                    order.id,
+                                    form_data["dish_id"],
+                                    form_data["quantity"],
+                                )
+                        with col_act2:
+                            st.write("")
+                            st.write("")
+                            st.write("")
+                            if st.button(
+                                "💰 Pay & Close",
+                                key=f"btn_close_{order.id}",
+                                type="primary",
+                            ):
+                                try:
+                                    order_service.close_order(order.id)
+                                    st.success(f"Order #{order.id} closed!")
+                                    time.sleep(1)
+                                    st.rerun()
+                                except AppError as e:
+                                    st.error(f"Failed to close: {e}")
+                    else:
+                        st.info("✅ This order is closed and paid.")
     except AppError as e:
         st.error(f"Error loading orders: {e}")
 
