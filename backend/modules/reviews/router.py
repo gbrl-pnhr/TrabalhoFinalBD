@@ -2,7 +2,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from backend.core.database import get_db_connection
-from backend.modules.reviews.models import ReviewCreate, ReviewResponse
+from backend.modules.reviews.models import ReviewCreate, ReviewResponse, ReviewUpdate
 from backend.modules.reviews.repository import ReviewRepository
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
@@ -49,6 +49,33 @@ def create_review(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
+        )
+
+
+@router.patch("/{review_id}", response_model=ReviewResponse)
+def update_review(
+    review_id: int,
+    review_update: ReviewUpdate,
+    repo: ReviewRepository = Depends(get_repository)
+):
+    """
+    Update the rating or comment of an existing review.
+    """
+    try:
+        updated_review = repo.update_review(review_id, review_update)
+        if not updated_review:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found."
+            )
+        return updated_review
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"API Error update_review: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
         )
 
 

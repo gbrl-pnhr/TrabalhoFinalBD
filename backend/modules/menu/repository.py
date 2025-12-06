@@ -1,9 +1,12 @@
 from typing import List, Optional
 from pathlib import Path
 import logging
+import json
 
 from backend.core.database import get_db_connection
-from backend.modules.menu.models import DishCreate, DishResponse
+from backend.modules.menu.models import DishCreate, DishResponse, DishUpdate
+from backend.modules.reviews.models import ReviewResponse
+
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"
 
@@ -17,12 +20,6 @@ class MenuRepository:
     def create_dish(self, dish: DishCreate) -> DishResponse:
         """
         Insert a new dish into the database.
-
-        Args:
-            dish (DishCreate): The dish data.
-
-        Returns:
-            DishResponse: The created dish with ID.
         """
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
@@ -42,27 +39,62 @@ class MenuRepository:
                 name=row["nome"],
                 price=row["preco"],
                 category=row["categoria"],
+                reviews=[],
             )
 
     def get_all_dishes(self) -> List[DishResponse]:
         """
-        Fetch all dishes.
-
-        Returns:
-            List[DishResponse]: List of all dishes in the menu.
+        Fetch all dishes populated with their reviews.
         """
-        query = "SELECT id_prato, nome, preco, categoria FROM prato ORDER BY nome;"
-
+        sql_file = QUERY_PATH / "list_populated.sql"
+        query = sql_file.read_text()
         with self.conn.cursor() as cur:
             cur.execute(query)
             rows = cur.fetchall()
-
-            return [
-                DishResponse(
-                    id=row["id_prato"],
-                    name=row["nome"],
-                    price=row["preco"],
-                    category=row["categoria"],
+            results = []
+            for row in rows:
+                reviews_data = row["reviews"]
+                if isinstance(reviews_data, str):
+                    reviews_data = json.loads(reviews_data)
+                reviews_list = [ReviewResponse(**r) for r in reviews_data]
+                results.append(
+                    DishResponse(
+                        id=row["id_prato"],
+                        name=row["nome"],
+                        price=row["preco"],
+                        category=row["categoria"],
+                        reviews=reviews_list,
+                    )
                 )
-                for row in rows
-            ]
+            return results
+
+    def update_dish(self, dish_id: int, dish: DishUpdate) -> Optional[DishResponse]:
+        """
+        Update a dish's details.
+        """
+        sql_file = QUERY_PATH / "update.sql"
+        query = sql_file.read_text()
+
+        with self.conn.cursor() as cur:
+            cur.execute(
+                query,
+                {
+                    "name": dish.name,
+                    "price": dish.price,
+                    "category": dish.category,
+                    "id": dish_id,
+                },
+            )
+            row = cur.fetchone()
+            self.conn.commit()
+
+            if not row:
+                return None
+
+            return DishResponse(
+                id=row["id_prato"],
+                name=row["nome"],
+                price=row["preco"],
+                category=row["categoria"],
+                reviews=[],
+            )

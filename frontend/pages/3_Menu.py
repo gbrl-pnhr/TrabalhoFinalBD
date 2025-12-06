@@ -1,16 +1,19 @@
 import streamlit as st
 import pandas as pd
+import time
 from services.menu import MenuService
 from components.forms import render_create_dish_form
 from utils.exceptions import AppError
-from schemas import DishCreate
+from schemas import DishCreate, DishUpdate
 
 menu_service = MenuService()
 
 st.set_page_config(page_title="Menu", page_icon="🍴", layout="wide")
 st.header("🍴 Menu Management")
 
-tab_list, tab_create = st.tabs(["Menu List", "Create Dish"])
+tab_list, tab_create, tab_manage = st.tabs(
+    ["Menu List", "Create Dish", "Manage (Edit/Delete)"]
+)
 
 
 @st.cache_data(ttl=300)
@@ -25,12 +28,6 @@ with tab_list:
             st.info("No dishes found in the menu.")
         else:
             df_dishes = pd.DataFrame([d.model_dump() for d in dishes_data])
-            col1, _ = st.columns([1, 2])
-            with col1:
-                search_term = st.text_input("🔍 Search Dish:", "").lower()
-            if search_term and not df_dishes.empty:
-                mask = df_dishes["name"].str.lower().str.contains(search_term)
-                df_dishes = df_dishes[mask]
             st.dataframe(
                 df_dishes,
                 use_container_width=True,
@@ -40,7 +37,6 @@ with tab_list:
             if st.button("Refresh List"):
                 st.cache_data.clear()
                 st.rerun()
-
     except AppError as e:
         st.error(f"Error loading menu: {e}")
 
@@ -51,7 +47,7 @@ with tab_create:
             dish_payload = DishCreate(
                 name=new_dish_data["name"],
                 price=new_dish_data["price"],
-                category=new_dish_data["category"]
+                category=new_dish_data["category"],
             )
             menu_service.create_dish(dish_payload)
             st.success(f"✅ Dish '{dish_payload.name}' created successfully!")
@@ -61,3 +57,52 @@ with tab_create:
             st.error(f"Failed to create dish: {e}")
         except ValueError as e:
             st.error(f"Validation Error: {e}")
+
+with tab_manage:
+    st.subheader("Edit or Remove Dishes")
+    try:
+        dishes = get_cached_menu()
+        if dishes:
+            dish_map = {d.id: f"{d.name} (${d.price})" for d in dishes}
+            selected_id = st.selectbox(
+                "Select Dish to Edit",
+                options=dish_map.keys(),
+                format_func=lambda x: dish_map[x],
+            )
+            selected_dish = next((d for d in dishes if d.id == selected_id), None)
+            if selected_dish:
+                with st.form(key="edit_dish_form"):
+                    st.write(f"Editing: **{selected_dish.name}**")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        new_price = st.number_input(
+                            "New Price ($)", value=float(selected_dish.price), step=0.5
+                        )
+                    with col2:
+                        new_name = st.text_input("New Name", value=selected_dish.name)
+
+                    update_btn = st.form_submit_button("💾 Update Dish Details")
+                st.write("")
+                delete_btn = st.button("🗑️ Permanently Delete Dish", type="primary")
+                if update_btn:
+                    try:
+                        update_payload = DishUpdate(name=new_name, price=new_price)
+                        menu_service.update_dish(selected_id, update_payload)
+                        st.success("✅ Dish updated!")
+                        st.cache_data.clear()
+                        time.sleep(1)
+                        st.rerun()
+                    except AppError as e:
+                        st.error(f"Update failed: {e}")
+                if delete_btn:
+                    try:
+                        menu_service.delete_dish(selected_id)
+                        st.warning("🗑️ Dish deleted.")
+                        st.cache_data.clear()
+                        time.sleep(1)
+                        st.rerun()
+                    except AppError as e:
+                        st.error(f"Delete failed: {e}")
+
+    except AppError as e:
+        st.error(f"Could not load menu: {e}")

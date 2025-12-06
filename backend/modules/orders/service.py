@@ -45,13 +45,14 @@ class OrderService:
             raise e
 
     def get_order_details(self, order_id: int) -> OrderResponse:
-        """Fetches order header and appends items."""
+        """
+        Fetches order header and items.
+        Refactored: Now relies on Repository deep fetch.
+        """
         order = self.order_repo.get_order_details(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
-        items = self.item_repo.get_items_by_order(order_id)
-        order.items = items
-        calc_total = sum(i.total_price for i in items)
+        calc_total = sum(i.total_price for i in order.items)
         if abs(calc_total - order.total_value) > Decimal("0.01"):
             logger.warning(
                 f"Order {order_id} total mismatch. DB: {order.total_value}, Calc: {calc_total}"
@@ -60,7 +61,7 @@ class OrderService:
         return order
 
     def list_orders(self) -> List[OrderResponse]:
-        """Lists all ACTIVE orders."""
+        """Lists all ACTIVE orders deeply populated."""
         return self.order_repo.list_active_orders()
 
     def add_item_to_order(

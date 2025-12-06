@@ -1,9 +1,10 @@
 from typing import List, Optional
 from pathlib import Path
 import logging
+import json
 from decimal import Decimal
 
-from backend.modules.orders.models import OrderCreate, OrderResponse
+from backend.modules.orders.models import OrderCreate, OrderResponse, OrderItemResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent.parent / "queries" / "order"
@@ -40,7 +41,10 @@ class OrderRepository:
             return row["id_pedido"]
 
     def get_order_details(self, order_id: int) -> Optional[OrderResponse]:
-        """Fetches order header + joins with customer/table/staff."""
+        """
+        Fetches order header joined with Customer, Table, Staff, AND Items.
+        Uses JSON Aggregation for efficient deep fetching.
+        """
         sql_file = QUERY_PATH / "get_details.sql"
         query = sql_file.read_text()
 
@@ -49,7 +53,10 @@ class OrderRepository:
             row = cur.fetchone()
             if not row:
                 return None
-
+            items_data = row["items"]
+            if isinstance(items_data, str):
+                items_data = json.loads(items_data)
+            items_list = [OrderItemResponse(**item) for item in items_data]
             return OrderResponse(
                 id=row["id_pedido"],
                 created_at=row["data_pedido"],
@@ -59,31 +66,42 @@ class OrderRepository:
                 customer_name=row["cliente_nome"],
                 table_number=row["mesa_numero"],
                 waiter_name=row["garcom_nome"],
-                items=[],
+                items=items_list,
             )
 
     def list_active_orders(self) -> List[OrderResponse]:
-        """Lists all orders (simplified view without items)."""
+        """
+        Lists all active orders deeply populated with their items.
+        """
         sql_file = QUERY_PATH / "list_active.sql"
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
             cur.execute(query)
             rows = cur.fetchall()
-            return [
-                OrderResponse(
-                    id=row["id_pedido"],
-                    created_at=row["data_pedido"],
-                    total_value=row["valor_total"],
-                    status=row["status"],
-                    customer_count=row["quantidade_pessoas"],
-                    customer_name=row["cliente_nome"],
-                    table_number=row["mesa_numero"],
-                    waiter_name=row["garcom_nome"],
-                    items=[],
+
+            results = []
+            for row in rows:
+                items_data = row["items"]
+                if isinstance(items_data, str):
+                    items_data = json.loads(items_data)
+
+                items_list = [OrderItemResponse(**item) for item in items_data]
+
+                results.append(
+                    OrderResponse(
+                        id=row["id_pedido"],
+                        created_at=row["data_pedido"],
+                        total_value=row["valor_total"],
+                        status=row["status"],
+                        customer_count=row["quantidade_pessoas"],
+                        customer_name=row["cliente_nome"],
+                        table_number=row["mesa_numero"],
+                        waiter_name=row["garcom_nome"],
+                        items=items_list,
+                    )
                 )
-                for row in rows
-            ]
+            return results
 
     def update_order_total(self, order_id: int, new_total: Decimal):
         """Updates the total value of an order."""

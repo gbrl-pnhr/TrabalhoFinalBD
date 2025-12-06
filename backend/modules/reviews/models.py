@@ -20,6 +20,15 @@ class ReviewCreate(ReviewBase):
     order_id: int = Field(..., description="ID of the order context")
 
 
+class ReviewUpdate(BaseModel):
+    """Schema for updating an existing review."""
+
+    rating: Optional[int] = Field(
+        None, ge=1, le=5, description="New rating from 1 to 5"
+    )
+    comment: Optional[str] = Field(None, max_length=500, description="New text comment")
+
+
 class ReviewResponse(ReviewBase):
     """Schema for review response."""
 

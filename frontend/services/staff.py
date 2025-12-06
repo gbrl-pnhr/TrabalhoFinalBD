@@ -20,6 +20,10 @@ class StaffService:
         response = self.client.post("/staff/waiters", waiter_data.model_dump())
         return WaiterResponse.model_validate(response)
 
+    def delete_waiter(self, waiter_id: int) -> None:
+        """Fire a waiter."""
+        self.client.delete(f"/staff/waiters/{waiter_id}")
+
     def get_chefs(self) -> List[ChefResponse]:
         """List all registered chefs."""
         data = self.client.get("/staff/chefs")
@@ -29,3 +33,7 @@ class StaffService:
         """Register a new chef."""
         response = self.client.post("/staff/chefs", chef_data.model_dump())
         return ChefResponse.model_validate(response)
+
+    def delete_chef(self, chef_id: int) -> None:
+        """Fire a chef."""
+        self.client.delete(f"/staff/chefs/{chef_id}")

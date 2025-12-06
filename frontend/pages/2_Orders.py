@@ -18,7 +18,6 @@ tab_view, tab_create = st.tabs(["Active Orders", "Open New Table"])
 
 
 def handle_add_item(order_id: int, dish_id: int, qty: int):
-    """Controller function for adding items."""
     try:
         item_payload = OrderItemCreate(dish_id=dish_id, quantity=qty)
         order_service.add_item(order_id, item_payload)
@@ -31,10 +30,19 @@ def handle_add_item(order_id: int, dish_id: int, qty: int):
         st.error(f"Validation Error: {e}")
 
 
+def handle_remove_item(order_id: int, item_id: int):
+    try:
+        order_service.remove_item(order_id, item_id)
+        st.toast(f"🗑️ Item removed from Order #{order_id}")
+        time.sleep(0.5)
+        st.rerun()
+    except AppError as e:
+        st.error(f"Failed to remove item: {e}")
+
+
 with tab_view:
     try:
         orders_data = order_service.list_orders()
-
         if not orders_data:
             st.info("No active orders found. Go to 'Open New Table' to start.")
         else:
@@ -58,9 +66,10 @@ with tab_view:
                     render_order_details(order)
                     st.divider()
                     if not is_closed:
-                        col_act1, col_act2 = st.columns([3, 1])
-                        with col_act1:
-                            st.caption("Add Item to Order")
+                        tab_add, tab_rem, tab_pay = st.tabs(
+                            ["Add Item", "Remove Item", "Pay & Close"]
+                        )
+                        with tab_add:
                             form_data = render_add_item_form(order.id)
                             if form_data:
                                 handle_add_item(
@@ -68,12 +77,28 @@ with tab_view:
                                     form_data["dish_id"],
                                     form_data["quantity"],
                                 )
-                        with col_act2:
-                            st.write("")
-                            st.write("")
-                            st.write("")
+                        with tab_rem:
+                            if order.items:
+                                items_map = {
+                                    item.id: f"{item.dish_name} (x{item.quantity})"
+                                    for item in order.items
+                                }
+                                selected_item_id = st.selectbox(
+                                    "Select Item to Remove",
+                                    options=items_map.keys(),
+                                    format_func=lambda x: items_map[x],
+                                    key=f"del_sel_{order.id}",
+                                )
+                                if st.button(
+                                    "🗑️ Remove Selected Item", key=f"btn_del_{order.id}"
+                                ):
+                                    handle_remove_item(order.id, selected_item_id)
+                            else:
+                                st.info("No items to remove.")
+                        with tab_pay:
+                            st.write("Ready to close?")
                             if st.button(
-                                "💰 Pay & Close",
+                                "💰 Pay & Close Order",
                                 key=f"btn_close_{order.id}",
                                 type="primary",
                             ):
@@ -111,6 +136,5 @@ with tab_create:
                 st.error(f"Could not create order: {e}")
             except ValueError as e:
                 st.error(f"Input Validation Error: {e}")
-
     except AppError as e:
         st.error(f"Could not load required data: {e}")

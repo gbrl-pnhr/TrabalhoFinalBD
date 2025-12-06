@@ -1,7 +1,9 @@
 from typing import List
 from pathlib import Path
 import logging
+import json
 from backend.modules.customers.models import CustomerCreate, CustomerResponse
+from backend.modules.orders.models import OrderResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"
@@ -16,15 +18,6 @@ class CustomerRepository:
     def create_customer(self, customer: CustomerCreate) -> CustomerResponse:
         """
         Register a new customer in the database.
-
-        Args:
-            customer (CustomerCreate): The customer data.
-
-        Returns:
-            CustomerResponse: The created customer with ID.
-
-        Raises:
-            Exception: If database insertion fails (e.g., duplicate email).
         """
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
@@ -51,6 +44,7 @@ class CustomerRepository:
                     name=row["nome"],
                     phone=row["telefone"],
                     email=row["email"],
+                    orders=[],  # New customer has no orders
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -59,23 +53,26 @@ class CustomerRepository:
 
     def get_all_customers(self) -> List[CustomerResponse]:
         """
-        Fetch all registered customers.
-
-        Returns:
-            List[CustomerResponse]: List of all customers.
+        Fetch all registered customers with their full order history.
         """
-        query = "SELECT id_cliente, nome, telefone, email FROM cliente ORDER BY nome;"
-
+        sql_file = QUERY_PATH / "list_populated.sql"
+        query = sql_file.read_text()
         with self.conn.cursor() as cur:
             cur.execute(query)
             rows = cur.fetchall()
-
-            return [
-                CustomerResponse(
-                    id=row["id_cliente"],
-                    name=row["nome"],
-                    phone=row["telefone"],
-                    email=row["email"],
+            results = []
+            for row in rows:
+                orders_data = row["orders"]
+                if isinstance(orders_data, str):
+                    orders_data = json.loads(orders_data)
+                orders_list = [OrderResponse(**o) for o in orders_data]
+                results.append(
+                    CustomerResponse(
+                        id=row["id_cliente"],
+                        name=row["nome"],
+                        phone=row["telefone"],
+                        email=row["email"],
+                        orders=orders_list,
+                    )
                 )
-                for row in rows
-            ]
+            return results

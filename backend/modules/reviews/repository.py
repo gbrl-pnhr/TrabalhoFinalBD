@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pathlib import Path
 import logging
-from backend.modules.reviews.models import ReviewCreate, ReviewResponse
+from backend.modules.reviews.models import ReviewCreate, ReviewResponse, ReviewUpdate
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"
@@ -17,20 +17,9 @@ class ReviewRepository:
         self.conn = db_connection
 
     @staticmethod
-    def _check_eligibility(
-        cur, customer_id: int, order_id: int, dish_id: int
-    ) -> bool:
+    def _check_eligibility(cur, customer_id: int, order_id: int, dish_id: int) -> bool:
         """
         Verifies if the customer actually ordered the dish in the specific order.
-
-        Args:
-            cur: Active database cursor.
-            customer_id (int): The customer ID.
-            order_id (int): The order ID.
-            dish_id (int): The dish ID.
-
-        Returns:
-            bool: True if eligible, False otherwise.
         """
         sql_file = QUERY_PATH / "check_eligibility.sql"
         query = sql_file.read_text()
@@ -43,16 +32,6 @@ class ReviewRepository:
     def create_review(self, review: ReviewCreate) -> ReviewResponse:
         """
         Submits a new review with strict eligibility checks.
-
-        Args:
-            review (ReviewCreate): The review data.
-
-        Returns:
-            ReviewResponse: The created review with joined details.
-
-        Raises:
-            ValueError: If the customer did not order the dish.
-            Exception: Database errors.
         """
         sql_create = (QUERY_PATH / "create.sql").read_text()
         sql_details = (QUERY_PATH / "get_details.sql").read_text()
@@ -107,12 +86,6 @@ class ReviewRepository:
     def get_reviews_by_dish(self, dish_id: int) -> List[ReviewResponse]:
         """
         Fetch all reviews for a specific dish.
-
-        Args:
-            dish_id (int): The ID of the dish.
-
-        Returns:
-            List[ReviewResponse]: List of reviews.
         """
         sql_file = QUERY_PATH / "list_by_dish.sql"
         query = sql_file.read_text()
@@ -132,3 +105,52 @@ class ReviewRepository:
                 )
                 for row in rows
             ]
+
+    def update_review(
+        self, review_id: int, review_update: ReviewUpdate
+    ) -> Optional[ReviewResponse]:
+        """
+        Updates an existing review's rating or comment.
+
+        Args:
+            review_id (int): ID of the review to update.
+            review_update (ReviewUpdate): Fields to update.
+
+        Returns:
+            Optional[ReviewResponse]: The updated review or None if not found.
+        """
+        sql_update = (QUERY_PATH / "update.sql").read_text()
+        sql_details = (QUERY_PATH / "get_details.sql").read_text()
+
+        with self.conn.cursor() as cur:
+            try:
+                cur.execute(
+                    sql_update,
+                    {
+                        "rating": review_update.rating,
+                        "comment": review_update.comment,
+                        "review_id": review_id,
+                    },
+                )
+                row_id = cur.fetchone()
+                if not row_id:
+                    self.conn.rollback()
+                    return None
+                cur.execute(sql_details, {"review_id": review_id})
+                row = cur.fetchone()
+                self.conn.commit()
+                if not row:
+                    return None
+                return ReviewResponse(
+                    id=row["id_avaliacao"],
+                    rating=row["nota"],
+                    comment=row["comentario"],
+                    created_at=row["data_avaliacao"],
+                    customer_name=row["nome_cliente"],
+                    dish_name=row["nome_prato"],
+                )
+
+            except Exception as e:
+                self.conn.rollback()
+                logger.exception(f"Database error updating review {review_id}: {e}")
+                raise e

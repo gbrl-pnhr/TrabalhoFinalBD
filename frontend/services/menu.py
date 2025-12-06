@@ -1,6 +1,6 @@
 from typing import List
 from services.api_client import APIClient
-from schemas import DishResponse, DishCreate
+from schemas import DishResponse, DishCreate, DishUpdate
 
 class MenuService:
     """
@@ -15,8 +15,19 @@ class MenuService:
         return [DishResponse.model_validate(item) for item in data]
 
     def create_dish(self, dish: DishCreate) -> DishResponse:
-        """
-        Add a new dish to the menu.
-        """
         response_data = self.client.post("/menu/dishes", dish.model_dump())
         return DishResponse.model_validate(response_data)
+
+    def update_dish(self, dish_id: int, updates: DishUpdate) -> DishResponse:
+        """
+        Update a single dish using the DishUpdate schema.
+        """
+        response_data = self.client.patch(
+            f"/menu/dishes/{dish_id}",
+            updates.model_dump(exclude_unset=True)
+        )
+        return DishResponse.model_validate(response_data)
+
+    def delete_dish(self, dish_id: int) -> None:
+        """Remove a dish from the menu."""
+        self.client.delete(f"/menu/dishes/{dish_id}")

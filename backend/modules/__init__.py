@@ -15,6 +15,7 @@ from backend.modules.customers.models import (
 from backend.modules.menu.models import (
     DishCreate,
     DishResponse,
+    DishUpdate,
 )
 from backend.modules.orders.models import (
     OrderCreate,
@@ -25,6 +26,7 @@ from backend.modules.orders.models import (
 from backend.modules.reviews.models import (
     ReviewCreate,
     ReviewResponse,
+    ReviewUpdate,
 )
 from backend.modules.staff.chefs.models import (
     ChefCreate,
@@ -48,12 +50,14 @@ __all__ = [
     "OrderItemCreate",
     "DishCreate",
     "DishResponse",
+    "DishUpdate",
     "OrderCreate",
     "OrderResponse",
     "OrderItemCreate",
     "OrderItemResponse",
     "ReviewCreate",
     "ReviewResponse",
+    "ReviewUpdate",
     "ChefCreate",
     "ChefResponse",
     "WaiterCreate",
