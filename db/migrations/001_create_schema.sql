@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS pedido (
     id_pedido SERIAL PRIMARY KEY,
     data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10, 2) DEFAULT 0.00,
+    status VARCHAR(20) DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED', 'CANCELLED')),
+    quantidade_pessoas INT DEFAULT 1 CHECK (quantidade_pessoas > 0),
     id_cliente INT NOT NULL,
     id_mesa INT NOT NULL,
     id_funcionario INT NOT NULL,

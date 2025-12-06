@@ -17,6 +17,7 @@ dependencies = [
     "yoyo-migrations>=9.0.0",
     "email-validator>=2.3.0",
     "validate-docbr>=1.11.1",
+    "faker>=38.2.0",
 ]
 
 [dependency-groups]
@@ -35,7 +36,10 @@ dev = "honcho start"
 api = "uvicorn backend.main:app --reload --port 8000"
 ui = "streamlit run frontend/main.py --server.port 8501"
 migrate = "python db/scripts/migrate.py"
-seed = "python db/scripts/seed.py"
+reset = "python db/scripts/reset.py"
+generate_seeds = "python db/scripts/generate_seed_sql.py"
+apply_seeds = "python db/scripts/seed.py"
+seed = "task generate_seeds && task apply_seeds"
 
 [tool.mypy]
 strict = true
