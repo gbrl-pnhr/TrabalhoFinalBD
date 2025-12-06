@@ -3,7 +3,7 @@ from pathlib import Path
 import logging
 from decimal import Decimal
 
-from backend.modules.orders.models import OrderCreate, OrderResponse, OrderItemResponse
+from backend.modules.orders.models import OrderCreate, OrderResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent.parent / "queries" / "order"
@@ -30,6 +30,7 @@ class OrderRepository:
                     "customer_id": order.customer_id,
                     "table_id": order.table_id,
                     "waiter_id": order.waiter_id,
+                    "people_count": order.customer_count,
                 },
             )
             row = cur.fetchone()
@@ -40,18 +41,8 @@ class OrderRepository:
 
     def get_order_details(self, order_id: int) -> Optional[OrderResponse]:
         """Fetches order header + joins with customer/table/staff."""
-        query = """
-                SELECT
-                    p.id_pedido, p.data_pedido, p.valor_total,
-                    c.nome as cliente_nome,
-                    m.numero as mesa_numero,
-                    g.nome as garcom_nome
-                FROM pedido p
-                         JOIN cliente c ON p.id_cliente = c.id_cliente
-                         JOIN mesa m ON p.id_mesa = m.id_mesa
-                         JOIN garcom g ON p.id_funcionario = g.id_funcionario
-                WHERE p.id_pedido = %(order_id)s; \
-                """
+        sql_file = QUERY_PATH / "get_details.sql"
+        query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
             cur.execute(query, {"order_id": order_id})
@@ -63,6 +54,8 @@ class OrderRepository:
                 id=row["id_pedido"],
                 created_at=row["data_pedido"],
                 total_value=row["valor_total"],
+                status=row["status"],
+                customer_count=row["quantidade_pessoas"],
                 customer_name=row["cliente_nome"],
                 table_number=row["mesa_numero"],
                 waiter_name=row["garcom_nome"],
@@ -71,18 +64,9 @@ class OrderRepository:
 
     def list_active_orders(self) -> List[OrderResponse]:
         """Lists all orders (simplified view without items)."""
-        query = """
-                SELECT
-                    p.id_pedido, p.data_pedido, p.valor_total,
-                    c.nome as cliente_nome,
-                    m.numero as mesa_numero,
-                    g.nome as garcom_nome
-                FROM pedido p
-                         JOIN cliente c ON p.id_cliente = c.id_cliente
-                         JOIN mesa m ON p.id_mesa = m.id_mesa
-                         JOIN garcom g ON p.id_funcionario = g.id_funcionario
-                ORDER BY p.data_pedido DESC; \
-                """
+        sql_file = QUERY_PATH / "list_active.sql"
+        query = sql_file.read_text()
+
         with self.conn.cursor() as cur:
             cur.execute(query)
             rows = cur.fetchall()
@@ -91,6 +75,8 @@ class OrderRepository:
                     id=row["id_pedido"],
                     created_at=row["data_pedido"],
                     total_value=row["valor_total"],
+                    status=row["status"],
+                    customer_count=row["quantidade_pessoas"],
                     customer_name=row["cliente_nome"],
                     table_number=row["mesa_numero"],
                     waiter_name=row["garcom_nome"],
@@ -101,7 +87,16 @@ class OrderRepository:
 
     def update_order_total(self, order_id: int, new_total: Decimal):
         """Updates the total value of an order."""
-        query = "UPDATE pedido SET valor_total = %(total)s WHERE id_pedido = %(id)s;"
+        sql_file = QUERY_PATH / "update_total.sql"
+        query = sql_file.read_text()
         with self.conn.cursor() as cur:
             cur.execute(query, {"total": new_total, "id": order_id})
+            self.conn.commit()
+
+    def update_status(self, order_id: int, status: str):
+        """Updates status to CLOSED or CANCELLED."""
+        sql_file = QUERY_PATH / "update_status.sql"
+        query = sql_file.read_text()
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"status": status, "id": order_id})
             self.conn.commit()

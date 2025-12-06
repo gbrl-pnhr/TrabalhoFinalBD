@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import logging
 from backend.modules.orders.models import OrderItemCreate, OrderItemResponse
@@ -30,16 +30,20 @@ class ItemRepository:
             )
             self.conn.commit()
 
+    def remove_item(self, item_id: int):
+        """Removes an item from the database."""
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"item_id": item_id})
+            self.conn.commit()
+
     def get_items_by_order(self, order_id: int) -> List[OrderItemResponse]:
         """Fetches all items for a specific order with Dish details."""
-        query = """
-                SELECT
-                    ip.id_item_pedido, ip.quantidade, ip.observacao,
-                    pr.id_prato, pr.nome as nome_prato, pr.preco
-                FROM item_pedido ip
-                         JOIN prato pr ON ip.id_prato = pr.id_prato
-                WHERE ip.id_pedido = %(order_id)s; \
-                """
+        sql_file = QUERY_PATH / "get_by_order.sql"
+        query = sql_file.read_text()
+
         with self.conn.cursor() as cur:
             cur.execute(query, {"order_id": order_id})
             rows = cur.fetchall()
