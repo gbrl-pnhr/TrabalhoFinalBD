@@ -1,0 +1,1 @@
+UPDATE pedido SET status = %(status)s WHERE id_pedido = %(id)s;

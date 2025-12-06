@@ -1,0 +1,1 @@
+DELETE FROM item_pedido WHERE id_item_pedido = %(item_id)s;

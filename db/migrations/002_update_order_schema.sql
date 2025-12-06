@@ -1,0 +1,3 @@
+ALTER TABLE pedido
+ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED', 'CANCELLED')),
+ADD COLUMN IF NOT EXISTS quantidade_pessoas INT DEFAULT 1 CHECK (quantidade_pessoas > 0);

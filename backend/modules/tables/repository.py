@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 import logging
 
@@ -80,3 +80,22 @@ class TableRepository:
                 )
                 for row in rows
             ]
+
+    def get_table_by_id(self, table_id: int) -> Optional[TableResponse]:
+        """Fetch a specific table by ID."""
+        sql_file = QUERY_PATH / "get_by_id.sql"
+        query = sql_file.read_text()
+
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": table_id})
+            row = cur.fetchone()
+
+            if not row:
+                return None
+
+            return TableResponse(
+                id=row["id_mesa"],
+                number=row["numero"],
+                capacity=row["capacidade"],
+                location=row["localizacao"],
+            )

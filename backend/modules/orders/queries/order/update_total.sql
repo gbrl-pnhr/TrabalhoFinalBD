@@ -1,0 +1,1 @@
+UPDATE pedido SET valor_total = %(total)s WHERE id_pedido = %(id)s;
