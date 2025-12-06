@@ -6,10 +6,12 @@ ENV_PATH = PROJECT_ROOT / ".env"
 
 class FrontendSettings(BaseSettings):
     """
-    Frontend specific settings.
-    Falls back to defaults if .env is missing or variables are unset.
+    Frontend configuration.
+    Values can be overridden by environment variables in .env file.
+    Example in .env: API_BASE_URL=http://192.168.1.5:8000/api/v1
     """
     API_BASE_URL: str = "http://localhost:8000/api/v1"
+    API_TIMEOUT: int = 10
     PAGE_TITLE: str = "Restaurant Manager"
 
     model_config = SettingsConfigDict(

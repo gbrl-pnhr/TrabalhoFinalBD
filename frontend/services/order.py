@@ -1,13 +1,13 @@
-from typing import List, Dict, Any
-from services.api_client import APIClient
+from typing import List, Dict, Any, Optional
+from frontend.services.api_client import APIClient
 
 class OrderService:
     """
-    Service layer for handling orders (Check-ins, adding items, closing).
+    Service layer for handling orders.
     """
 
-    def __init__(self):
-        self.client = APIClient()
+    def __init__(self, client: Optional[APIClient] = None):
+        self.client = client or APIClient()
 
     def create_order(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
         """

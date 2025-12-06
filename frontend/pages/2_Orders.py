@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
 import time
-from services.order import OrderService
-from services.customers import CustomerService
-from components.cards import render_order_card
-from components.forms import render_open_order_form
-from utils.exceptions import AppError
-
+from frontend.services.order import OrderService
+from frontend.services.customers import CustomerService
+from frontend.components.cards import render_order_details
+from frontend.components.forms import render_add_item_form, render_open_order_form
+from frontend.utils.exceptions import AppError
 order_service = OrderService()
 customer_service = CustomerService()
 
@@ -15,8 +14,9 @@ st.header("📝 Order Management")
 
 tab_view, tab_create = st.tabs(["Active Orders", "Open New Table"])
 
+
 def handle_add_item(order_id: int, dish_id: int, qty: int):
-    """Controller function to handle Adding Items."""
+    """Controller function for adding items."""
     try:
         order_service.add_item(order_id, {"dish_id": dish_id, "quantity": qty})
         st.toast(f"✅ Item added to Order #{order_id}!")
@@ -44,8 +44,20 @@ with tab_view:
             )
             st.markdown("---")
             st.subheader("Order Actions")
-            for order_summary in orders_data:
-                render_order_card(order_summary, on_add_item=handle_add_item)
+            for order in orders_data:
+                order_id = order.get("id")
+                customer = order.get("customer_name", "Unknown")
+                total = order.get("total_value", 0.0)
+                label = f"📋 Order #{order_id} | {customer} | ${total:,.2f}"
+                with st.expander(label, expanded=False):
+                    render_order_details(order)
+                    st.divider()
+                    st.caption("Add Item to Order")
+                    form_data = render_add_item_form(order_id)
+                    if form_data:
+                        handle_add_item(
+                            order_id, form_data["dish_id"], form_data["quantity"]
+                        )
 
     except AppError as e:
         st.error(f"Error loading orders: {e}")
