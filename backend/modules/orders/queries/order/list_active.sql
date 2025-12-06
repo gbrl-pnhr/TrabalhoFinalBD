@@ -4,6 +4,8 @@ SELECT
     p.valor_total,
     p.status,
     p.quantidade_pessoas,
+    p.id_mesa,
+    p.id_funcionario as id_garcom,
     c.nome as cliente_nome,
     m.numero as mesa_numero,
     g.nome as garcom_nome,
@@ -34,6 +36,8 @@ GROUP BY
     p.valor_total,
     p.status,
     p.quantidade_pessoas,
+    p.id_mesa,
+    p.id_funcionario,
     c.nome,
     m.numero,
     g.nome

@@ -60,7 +60,7 @@ with tab_view:
             display_cols = [c for c in cols if c in df_orders.columns]
             st.dataframe(
                 df_orders[display_cols],
-                width='stretch',
+                width="stretch",
                 hide_index=True,
                 column_config={
                     "total_value": st.column_config.NumberColumn(format="$%.2f")
@@ -69,7 +69,10 @@ with tab_view:
             st.markdown("---")
             st.subheader("Manage Active Orders")
             for order in active_orders:
-                label = f"📋 Order #{order.id} | Table {order.table_id} | ${order.total_value:,.2f}"
+                t_label = getattr(
+                    order, "table_number", getattr(order, "table_id", "?")
+                )
+                label = f"📋 Order #{order.id} | Table {t_label} | ${order.total_value:,.2f}"
                 with st.expander(label, expanded=False):
                     render_order_details(order)
                     st.divider()
@@ -132,7 +135,7 @@ with tab_create:
             for t in tables
             if not t.is_occupied
         }
-        w_options = {w.id: f"{w.name}" for w in waiters}
+        w_options = {w.id: w.name for w in waiters}
         submission_data = render_open_order_form(c_options, t_options, w_options)
         if submission_data:
             try:

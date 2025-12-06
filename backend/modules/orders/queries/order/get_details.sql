@@ -4,6 +4,8 @@ SELECT
     p.valor_total,
     p.status,
     p.quantidade_pessoas,
+    p.id_mesa,
+    p.id_funcionario as id_garcom,
     c.nome as cliente_nome,
     m.numero as mesa_numero,
     g.nome as garcom_nome,
@@ -27,5 +29,15 @@ FROM pedido p
     JOIN garcom g ON p.id_funcionario = g.id_funcionario
     LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
     LEFT JOIN prato pr ON ip.id_prato = pr.id_prato
-WHERE p.id_pedido = %(order_id)s
-GROUP BY p.id_pedido, c.nome, m.numero, g.nome;
+WHERE p.id_pedido = :order_id
+GROUP BY
+    p.id_pedido,
+    p.data_pedido,
+    p.valor_total,
+    p.status,
+    p.quantidade_pessoas,
+    p.id_mesa,
+    p.id_funcionario,
+    c.nome,
+    m.numero,
+    g.nome;

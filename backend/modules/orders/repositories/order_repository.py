@@ -40,11 +40,30 @@ class OrderRepository:
                 raise Exception("Failed to create order")
             return row["id_pedido"]
 
+    def _map_row_to_response(self, row) -> OrderResponse:
+        """Helper to map a DB row to OrderResponse."""
+        items_data = row["items"]
+        if isinstance(items_data, str):
+            items_data = json.loads(items_data)
+        if not items_data:
+            items_list = []
+        else:
+            items_list = [OrderItemResponse(**item) for item in items_data]
+        return OrderResponse(
+            id=row["id_pedido"],
+            created_at=row["data_pedido"],
+            total_value=row["valor_total"],
+            status=row["status"],
+            customer_count=row["quantidade_pessoas"],
+            customer_name=row["cliente_nome"],
+            table_id=row["id_mesa"],
+            waiter_id=row["id_garcom"],
+            table_number=row["mesa_numero"],
+            waiter_name=row["garcom_nome"],
+            items=items_list,
+        )
+
     def get_order_details(self, order_id: int) -> Optional[OrderResponse]:
-        """
-        Fetches order header joined with Customer, Table, Staff, AND Items.
-        Uses JSON Aggregation for efficient deep fetching.
-        """
         sql_file = QUERY_PATH / "get_details.sql"
         query = sql_file.read_text()
 
@@ -53,58 +72,18 @@ class OrderRepository:
             row = cur.fetchone()
             if not row:
                 return None
-            items_data = row["items"]
-            if isinstance(items_data, str):
-                items_data = json.loads(items_data)
-            items_list = [OrderItemResponse(**item) for item in items_data]
-            return OrderResponse(
-                id=row["id_pedido"],
-                created_at=row["data_pedido"],
-                total_value=row["valor_total"],
-                status=row["status"],
-                customer_count=row["quantidade_pessoas"],
-                customer_name=row["cliente_nome"],
-                table_number=row["mesa_numero"],
-                waiter_name=row["garcom_nome"],
-                items=items_list,
-            )
+            return self._map_row_to_response(row)
 
     def list_active_orders(self) -> List[OrderResponse]:
-        """
-        Lists all active orders deeply populated with their items.
-        """
         sql_file = QUERY_PATH / "list_active.sql"
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
             cur.execute(query)
             rows = cur.fetchall()
-
-            results = []
-            for row in rows:
-                items_data = row["items"]
-                if isinstance(items_data, str):
-                    items_data = json.loads(items_data)
-
-                items_list = [OrderItemResponse(**item) for item in items_data]
-
-                results.append(
-                    OrderResponse(
-                        id=row["id_pedido"],
-                        created_at=row["data_pedido"],
-                        total_value=row["valor_total"],
-                        status=row["status"],
-                        customer_count=row["quantidade_pessoas"],
-                        customer_name=row["cliente_nome"],
-                        table_number=row["mesa_numero"],
-                        waiter_name=row["garcom_nome"],
-                        items=items_list,
-                    )
-                )
-            return results
+            return [self._map_row_to_response(row) for row in rows]
 
     def update_order_total(self, order_id: int, new_total: Decimal):
-        """Updates the total value of an order."""
         sql_file = QUERY_PATH / "update_total.sql"
         query = sql_file.read_text()
         with self.conn.cursor() as cur:
@@ -112,7 +91,6 @@ class OrderRepository:
             self.conn.commit()
 
     def update_status(self, order_id: int, status: str):
-        """Updates status to CLOSED or CANCELLED."""
         sql_file = QUERY_PATH / "update_status.sql"
         query = sql_file.read_text()
         with self.conn.cursor() as cur:

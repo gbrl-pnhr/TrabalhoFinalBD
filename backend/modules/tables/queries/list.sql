@@ -13,4 +13,4 @@ SELECT
         ELSE false
     END as is_occupied
 FROM mesa m
-WHERE m.id_mesa = %(id)s;
+ORDER BY m.numero;

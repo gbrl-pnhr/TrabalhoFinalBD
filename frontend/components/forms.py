@@ -46,7 +46,7 @@ def render_create_dish_form() -> Optional[Dict[str, Any]]:
                 "Category", ["Appetizer", "Main Course", "Dessert", "Beverage", "Side"]
             )
 
-        if st.form_submit_button("Create Dish", width='stretch'):
+        if st.form_submit_button("Create Dish", width="stretch"):
             if not name:
                 st.error("Dish name is required.")
                 return None
@@ -56,32 +56,59 @@ def render_create_dish_form() -> Optional[Dict[str, Any]]:
 
 def render_open_order_form(
     customer_options: Dict[int, str],
+    table_options: Dict[int, str],
+    waiter_options: Dict[int, str],
 ) -> Optional[Dict[str, Any]]:
     """
-    Renders the form to open a new table/order.
+    Renders the form to open a new table/order using Dropdowns.
     Args:
-        customer_options: Dict mapping ID -> Name
+        customer_options: Dict mapping Customer ID -> Name
+        table_options: Dict mapping Table ID -> Label (e.g. "Table 1 (4 seats)")
+        waiter_options: Dict mapping Waiter ID -> Name
     Returns:
         Dict payload for order creation if submitted.
     """
     with st.form("new_order_form"):
+        st.write("Select details to open a new tab:")
         c1, c2 = st.columns(2)
         with c1:
             c_id = st.selectbox(
                 "Select Customer",
                 options=customer_options.keys(),
                 format_func=lambda x: customer_options.get(x, "Unknown"),
+                help="Who is paying the bill?",
             )
+            w_id = st.selectbox(
+                "Assign Waiter",
+                options=waiter_options.keys(),
+                format_func=lambda x: waiter_options.get(x, "Unknown"),
+            )
+
         with c2:
-            table_id = st.number_input("Table Number", min_value=1, step=1)
-        waiter_id = st.number_input("Waiter ID", min_value=1, step=1)
-        customer_count = st.number_input("Waiter ID", min_value=1, step=1)
+            if not table_options:
+                st.warning("No tables available/free!")
+                table_id = None
+            else:
+                table_id = st.selectbox(
+                    "Select Table",
+                    options=table_options.keys(),
+                    format_func=lambda x: table_options.get(x, "Unknown"),
+                )
+            customer_count = st.number_input(
+                "Number of Guests", min_value=1, step=1, value=2
+            )
+
         st.markdown("---")
-        if st.form_submit_button("Open Table", width='stretch'):
+        disabled = table_id is None
+        if st.form_submit_button("Open Table", width="stretch", disabled=disabled):
+            if not c_id or not table_id or not w_id:
+                st.error("Please select all fields.")
+                return None
+
             return {
                 "customer_id": c_id,
                 "table_id": table_id,
-                "waiter_id": waiter_id,
+                "waiter_id": w_id,
                 "customer_count": customer_count,
             }
     return None

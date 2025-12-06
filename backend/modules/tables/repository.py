@@ -17,15 +17,6 @@ class TableRepository:
     def create_table(self, table: TableCreate) -> TableResponse:
         """
         Register a new table in the database.
-
-        Args:
-            table (TableCreate): The table data.
-
-        Returns:
-            TableResponse: The created table with ID.
-
-        Raises:
-            Exception: If database insertion fails (e.g., duplicate number).
         """
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
@@ -52,6 +43,7 @@ class TableRepository:
                     number=row["numero"],
                     capacity=row["capacidade"],
                     location=row["localizacao"],
+                    is_occupied=False
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -60,12 +52,10 @@ class TableRepository:
 
     def get_all_tables(self) -> List[TableResponse]:
         """
-        Fetch all tables.
-
-        Returns:
-            List[TableResponse]: List of all tables ordered by number.
+        Fetch all tables with occupancy status.
         """
-        query = "SELECT id_mesa, numero, capacidade, localizacao FROM mesa ORDER BY numero;"
+        sql_file = QUERY_PATH / "list.sql"
+        query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
             cur.execute(query)
@@ -77,6 +67,7 @@ class TableRepository:
                     number=row["numero"],
                     capacity=row["capacidade"],
                     location=row["localizacao"],
+                    is_occupied=row["is_occupied"]
                 )
                 for row in rows
             ]
@@ -98,4 +89,5 @@ class TableRepository:
                 number=row["numero"],
                 capacity=row["capacidade"],
                 location=row["localizacao"],
+                is_occupied=row["is_occupied"]
             )

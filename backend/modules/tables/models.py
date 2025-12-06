@@ -11,6 +11,7 @@ class TableCreate(TableBase):
     pass
 
 class TableResponse(TableBase):
-    """Schema for table response, including DB ID."""
+    """Schema for table response, including DB ID and Occupancy Status."""
     id: int = Field(..., description="Unique identifier of the table")
+    is_occupied: bool = Field(False, description="True if an active order exists for this table")
     model_config = ConfigDict(from_attributes=True)
