@@ -1,32 +1,37 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from frontend.services.api_client import APIClient
 
 class AnalyticsService:
     """
-    Service layer for fetching analytics data from the backend.
+    Service layer for fetching business analytics.
     """
 
-    @staticmethod
-    def get_revenue_stats() -> List[Dict[str, Any]]:
-        """
-        Fetch daily revenue statistics.
-        Returns: List of dictionaries (e.g., [{'date': '2023-10-01', 'total_revenue': 100.0}, ...])
-        """
-        data = APIClient.get("/analytics/revenue")
-        return data if data else []
+    def __init__(self):
+        self.client = APIClient()
 
-    @staticmethod
-    def get_popular_dishes() -> List[Dict[str, Any]]:
+    def get_revenue_stats(self) -> List[Dict[str, Any]]:
         """
-        Fetch top 10 popular dishes.
-        """
-        data = APIClient.get("/analytics/popular-dishes")
-        return data if data else []
+        Fetch daily revenue statistics for the last 30 days.
 
-    @staticmethod
-    def get_waiter_performance() -> List[Dict[str, Any]]:
+        Returns:
+            List[Dict]: A list of daily revenue records.
+        """
+        return self.client.get("/analytics/revenue")
+
+    def get_popular_dishes(self) -> List[Dict[str, Any]]:
+        """
+        Fetch the top 10 most popular dishes.
+
+        Returns:
+            List[Dict]: A list of dish popularity records.
+        """
+        return self.client.get("/analytics/popular-dishes")
+
+    def get_staff_performance(self) -> List[Dict[str, Any]]:
         """
         Fetch performance stats for waiters.
+
+        Returns:
+            List[Dict]: A list of waiter performance records.
         """
-        data = APIClient.get("/analytics/staff-performance")
-        return data if data else []
+        return self.client.get("/analytics/staff-performance")

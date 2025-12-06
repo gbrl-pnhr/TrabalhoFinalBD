@@ -1,60 +1,125 @@
-import requests
 import logging
-from typing import Optional, Dict, Any
+import requests
+from typing import Any, Dict, Optional
 
-# Configure logging for the frontend
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("frontend.api")
+logger = logging.getLogger("frontend.api_client")
 
 
 class APIClient:
     """
-    Singleton client to handle HTTP requests to the FastAPI backend.
+    A wrapper class for handling HTTP requests to the Backend API.
+    Handles base URL management, common headers, and error logging.
     """
 
-    BASE_URL = "http://localhost:8000/api/v1"
-    TIMEOUT = 5
-
-    @staticmethod
-    def _handle_response(response: requests.Response) -> Optional[Any]:
+    def __init__(self, base_url: str = "http://localhost:8000/api/v1"):
         """
-        Helper to parse response or log errors.
+        Initialize the API Client.
+
+        Args:
+            base_url (str): The root URL of the API. Defaults to local dev server.
+        """
+        self.base_url = base_url.rstrip("/")
+        self.headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+    def _handle_response(self, response: requests.Response) -> Any:
+        """
+        Internal method to process the response.
+
+        Args:
+            response (requests.Response): The raw HTTP response object.
+
+        Returns:
+            Any: Parsed JSON data if successful.
+
+        Raises:
+            Exception: If the status code indicates failure (4xx, 5xx).
         """
         try:
             response.raise_for_status()
+            if response.status_code == 204:
+                return None
             return response.json()
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP Error: {e} - Response: {response.text}")
-            return None
+        except requests.exceptions.HTTPError as http_err:
+            error_msg = f"HTTP Error: {http_err}"
+            try:
+                detail = response.json().get("detail")
+                if detail:
+                    error_msg = f"API Error: {detail}"
+            except Exception:
+                pass
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+        except Exception as err:
+            logger.error(f"Unexpected Error: {err}")
+            raise Exception(f"An unexpected error occurred: {err}")
+
+    def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        """
+        Perform a GET request.
+
+        Args:
+            endpoint (str): The API path (e.g., "/menu/dishes").
+            params (dict, optional): Query parameters.
+
+        Returns:
+            Any: The JSON response.
+        """
+        url = f"{self.base_url}{endpoint}"
+        logger.info(f"GET {url}")
+        try:
+            response = requests.get(url, headers=self.headers, params=params)
+            return self._handle_response(response)
         except requests.exceptions.ConnectionError:
-            logger.error("Connection Error: Backend seems to be down.")
-            return None
-        except Exception as e:
-            logger.error(f"Unexpected Error: {e}")
-            return None
+            raise Exception("Failed to connect to the backend server. Is it running?")
 
-    @classmethod
-    def get(cls, endpoint: str, params: Optional[Dict] = None) -> Optional[Any]:
+    def post(self, endpoint: str, data: Dict[str, Any]) -> Any:
         """
-        Generic GET request.
-        """
-        url = f"{cls.BASE_URL}{endpoint}"
-        try:
-            response = requests.get(url, params=params, timeout=cls.TIMEOUT)
-            return cls._handle_response(response)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {e}")
-            return None
+        Perform a POST request.
 
-    @classmethod
-    def post(cls, endpoint: str, data: Dict) -> Optional[Any]:
+        Args:
+            endpoint (str): The API path.
+            data (dict): The JSON payload.
+
+        Returns:
+            Any: The JSON response.
         """
-        Generic POST request.
+        url = f"{self.base_url}{endpoint}"
+        logger.info(f"POST {url}")
+        response = requests.post(url, headers=self.headers, json=data)
+        return self._handle_response(response)
+
+    def patch(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Any:
         """
-        url = f"{cls.BASE_URL}{endpoint}"
-        try:
-            response = requests.post(url, json=data, timeout=cls.TIMEOUT)
-            return cls._handle_response(response)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request failed: {e}")
-            return None
+        Perform a PATCH request.
+
+        Args:
+            endpoint (str): The API path.
+            data (dict, optional): The JSON payload.
+
+        Returns:
+            Any: The JSON response.
+        """
+        url = f"{self.base_url}{endpoint}"
+        logger.info(f"PATCH {url}")
+        response = requests.patch(url, headers=self.headers, json=data or {})
+        return self._handle_response(response)
+
+    def delete(self, endpoint: str) -> Any:
+        """
+        Perform a DELETE request.
+
+        Args:
+            endpoint (str): The API path.
+
+        Returns:
+            Any: The JSON response (usually None for 204).
+        """
+        url = f"{self.base_url}{endpoint}"
+        logger.info(f"DELETE {url}")
+        response = requests.delete(url, headers=self.headers)
+        return self._handle_response(response)
