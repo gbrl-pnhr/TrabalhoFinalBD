@@ -37,10 +37,11 @@ def render_revenue_chart(revenue_data: List[DailyRevenue]):
         title="Daily Revenue",
         labels={"total_revenue": "Revenue ($)", "date": "Date"},
     )
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, width="stretch")
 
 
 def render_popular_dishes_chart(dish_data: List[DishPopularity]):
+    """Renders a bar chart for popular dishes."""
     st.subheader("🍔 Popular Dishes")
     if not dish_data:
         st.info("No sales data yet.")
@@ -51,18 +52,20 @@ def render_popular_dishes_chart(dish_data: List[DishPopularity]):
         return
     fig = px.bar(
         df,
-        x="quantity_sold",
+        x="total_sold",
         y="dish_name",
         orientation="h",
         title="Top Selling Items",
-        color="quantity_sold",
+        color="total_sold",
         color_continuous_scale="Viridis",
+        labels={"total_sold": "Quantity Sold", "dish_name": "Dish Name"},
     )
     fig.update_layout(yaxis={"categoryorder": "total ascending"})
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, width="stretch")
 
 
 def render_staff_table(staff_data: List[WaiterPerformance]):
+    """Renders the staff performance table."""
     st.subheader("Staff Performance")
     if not staff_data:
         st.info("No staff records found.")
