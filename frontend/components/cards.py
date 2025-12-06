@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-from        schemas import OrderResponse
+from datetime import datetime
+from schemas import OrderResponse
 
 
 def render_order_details(order: OrderResponse):
@@ -23,3 +24,38 @@ def render_order_details(order: OrderResponse):
         )
     else:
         st.info("No items ordered yet.")
+
+
+def render_kitchen_ticket(order: OrderResponse):
+    """
+    Renders a large, high-contrast ticket for the Kitchen Display System (KDS).
+    """
+    # Calculate time delta if created_at is available (assuming ISO format string)
+    time_label = "Just Now"
+    if hasattr(order, "created_at") and order.created_at:
+        try:
+            # Simple parsing - adjust based on actual backend format
+            created_dt = datetime.fromisoformat(str(order.created_at))
+            delta = datetime.now() - created_dt
+            minutes = int(delta.total_seconds() / 60)
+            time_label = f"{minutes} min ago"
+        except Exception:
+            pass
+
+    with st.container(border=True):
+        c1, c2 = st.columns([3, 1])
+        with c1:
+            st.markdown(f"### 🍽️ Table {order.table_id}")
+            st.caption(f"Order #{order.id} • Waiter ID: {order.waiter_id}")
+        with c2:
+            st.markdown(f"**{time_label}**")
+            st.markdown("🔴 PREP")
+
+        st.divider()
+
+        if not order.items:
+            st.warning("Empty Ticket")
+        else:
+            for item in order.items:
+                st.markdown(f"#### **{item.quantity}x** {item.dish_name}")
+                st.caption(f"{item.observacao}")
