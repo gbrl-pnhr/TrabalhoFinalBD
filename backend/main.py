@@ -11,6 +11,7 @@ from backend.modules.customers.router import router as customer_router
 from backend.modules.tables.router import router as table_router
 from backend.modules.staff.routers import router as staff_router
 from backend.modules.orders.router import router as order_router
+from backend.modules.reviews.router import router as review_router
 
 setup_logging()
 logger = logging.getLogger("api.main")
@@ -47,6 +48,7 @@ app.include_router(customer_router, prefix=settings.API_V1_STR)
 app.include_router(table_router, prefix=settings.API_V1_STR)
 app.include_router(staff_router, prefix=settings.API_V1_STR)
 app.include_router(order_router, prefix=settings.API_V1_STR)
+app.include_router(review_router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():
