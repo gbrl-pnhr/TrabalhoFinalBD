@@ -106,6 +106,15 @@ class ReviewRepository:
                 for row in rows
             ]
 
+    def delete_review(self, review_id: int) -> bool:
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": review_id})
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted > 0
+
     def update_review(
         self, review_id: int, review_update: ReviewUpdate
     ) -> Optional[ReviewResponse]:

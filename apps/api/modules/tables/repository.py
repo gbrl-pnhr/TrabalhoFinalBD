@@ -14,6 +14,15 @@ class TableRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
+    def delete_table(self, table_id: int) -> bool:
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": table_id})
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted > 0
+
     def create_table(self, table: TableCreate) -> TableResponse:
         """
         Register a new table in the database.

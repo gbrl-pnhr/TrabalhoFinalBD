@@ -12,6 +12,15 @@ class WaiterRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
+    def delete_waiter(self, waiter_id: int) -> bool:
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": waiter_id})
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted > 0
+
     def create_waiter(self, waiter: WaiterCreate) -> WaiterResponse:
         """Register a new waiter."""
         sql_file = QUERY_PATH / "create.sql"

@@ -1,0 +1,1 @@
+DELETE FROM mesa WHERE id_mesa = %(id)s;

@@ -1,0 +1,1 @@
+DELETE FROM cozinheiro WHERE id_funcionario = %(id)s;

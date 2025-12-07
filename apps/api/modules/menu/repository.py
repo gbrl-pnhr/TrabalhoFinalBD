@@ -16,6 +16,20 @@ class MenuRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
+    def delete_dish(self, dish_id: int) -> bool:
+        """
+        Deletes a dish from the database.
+        Returns True if a row was deleted, False otherwise.
+        """
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": dish_id})
+            rows_deleted = cur.rowcount
+            self.conn.commit()
+            return rows_deleted > 0
+
     def get_categories(self) -> List[str]:
         """Fetch all unique categories currently in the database."""
         sql_file = QUERY_PATH / "categories.sql"

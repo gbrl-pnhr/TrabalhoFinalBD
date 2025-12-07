@@ -1,0 +1,1 @@
+DELETE FROM avaliacao WHERE id_avaliacao = %(id)s;
