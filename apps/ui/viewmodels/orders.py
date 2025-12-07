@@ -1,12 +1,10 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional
 from dataclasses import dataclass
+import streamlit as st
 from apps.api.modules import (
     OrderResponse,
     OrderCreate,
     OrderItemCreate,
-    CustomerResponse,
-    TableResponse,
-    WaiterResponse,
 )
 from apps.ui.services.order import OrderService
 from apps.ui.services.customers import CustomerService
@@ -27,7 +25,7 @@ class NewOrderOptions:
 class OrdersViewModel:
     """
     Business Logic for the Orders Page.
-    Zero Streamlit dependencies.
+    Handles data state and command execution.
     """
 
     def __init__(
@@ -54,14 +52,12 @@ class OrdersViewModel:
                 for o in all_orders
                 if str(o.status).lower() not in ["closed", "paid", "completed"]
             ]
+            self.active_orders.sort(key=lambda x: x.id, reverse=True)
         except AppError as e:
             self.last_error = str(e)
 
     def get_new_order_options(self) -> NewOrderOptions:
-        """
-        Fetches auxiliary data needed to open a new table.
-        Filters tables to only show unoccupied ones.
-        """
+        """Fetches auxiliary data needed to open a new table."""
         try:
             customers = self._customer_service.get_customers()
             tables = self._table_service.get_tables()
@@ -97,7 +93,6 @@ class OrdersViewModel:
     def create_order(
         self, customer_id: int, table_id: int, waiter_id: int, count: int
     ) -> bool:
-        """Attempts to create a new order."""
         self.last_error = None
         try:
             payload = OrderCreate(
@@ -108,15 +103,16 @@ class OrdersViewModel:
             )
             self._order_service.create_order(payload)
             return True
-        except AppError as e:
+        except (AppError, ValueError) as e:
             self.last_error = str(e)
-            return False
-        except ValueError as e:
-            self.last_error = f"Validation Error: {e}"
             return False
 
     def add_item_to_order(self, order_id: int, dish_id: int, quantity: int) -> bool:
         self.last_error = None
+        if quantity < 1:
+            self.last_error = "Quantity must be at least 1."
+            return False
+
         try:
             item = OrderItemCreate(dish_id=dish_id, quantity=quantity)
             self._order_service.add_item(order_id, item)
