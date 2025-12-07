@@ -2,7 +2,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from apps.api.core.database import get_db_connection
-from apps.api.modules.analytics.models import (
+from packages.common.src.models.analytics_models import (
     DailyRevenue,
     DishPopularity,
     WaiterPerformance,

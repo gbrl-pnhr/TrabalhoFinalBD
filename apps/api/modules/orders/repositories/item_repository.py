@@ -1,7 +1,7 @@
 from typing import List
 from pathlib import Path
 import logging
-from apps.api.modules.orders.models import OrderItemCreate, OrderItemResponse
+from packages.common.src.models.orders_models import OrderItemCreate, OrderItemResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent.parent / "queries" / "item"

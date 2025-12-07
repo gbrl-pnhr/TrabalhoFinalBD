@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from decimal import Decimal
 from typing import Optional, List
-from apps.api.modules.reviews.models import ReviewResponse
+from packages.common.src.models.reviews_models import ReviewResponse
 
 
 class DishBase(BaseModel):

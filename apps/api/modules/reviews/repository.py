@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pathlib import Path
 import logging
-from apps.api.modules.reviews.models import ReviewCreate, ReviewResponse, ReviewUpdate
+from packages.common.src.models.reviews_models import ReviewCreate, ReviewResponse, ReviewUpdate
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

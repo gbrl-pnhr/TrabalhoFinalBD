@@ -1,7 +1,7 @@
 from typing import List
 from pathlib import Path
 import logging
-from apps.api.modules.analytics.models import (
+from packages.common.src.models.analytics_models import (
     DailyRevenue,
     DishPopularity,
     WaiterPerformance,

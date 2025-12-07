@@ -2,7 +2,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Path as PathParam
 from apps.api.core.database import get_db_connection
-from apps.api.modules.orders.models import OrderCreate, OrderResponse, OrderItemCreate
+from packages.common.src.models.orders_models import OrderCreate, OrderResponse, OrderItemCreate
 from apps.api.modules.orders.service import OrderService
 
 router = APIRouter(prefix="/orders", tags=["Orders"])

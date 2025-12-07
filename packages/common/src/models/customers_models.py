@@ -1,6 +1,6 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from apps.api.modules.orders.models import OrderResponse
+from packages.common.src.models.orders_models import OrderResponse
 
 
 class CustomerBase(BaseModel):

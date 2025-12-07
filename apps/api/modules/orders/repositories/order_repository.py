@@ -4,7 +4,7 @@ import logging
 import json
 from decimal import Decimal
 
-from apps.api.modules.orders.models import OrderCreate, OrderResponse, OrderItemResponse
+from packages.common.src.models.orders_models import OrderCreate, OrderResponse, OrderItemResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent.parent / "queries" / "order"

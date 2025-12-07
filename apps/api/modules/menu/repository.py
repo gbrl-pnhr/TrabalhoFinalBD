@@ -3,8 +3,8 @@ from pathlib import Path
 import logging
 import json
 
-from apps.api.modules.menu.models import DishCreate, DishResponse, DishUpdate
-from apps.api.modules.reviews.models import ReviewResponse
+from packages.common.src.models.menu_models import DishCreate, DishResponse, DishUpdate
+from packages.common.src.models.reviews_models import ReviewResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

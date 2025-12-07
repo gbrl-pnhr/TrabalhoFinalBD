@@ -1,7 +1,7 @@
 from typing import List
 from pathlib import Path
 import logging
-from apps.api.modules.staff.chefs.models import ChefCreate, ChefResponse
+from packages.common.src.models.chef_models import ChefCreate, ChefResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

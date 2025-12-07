@@ -2,7 +2,7 @@ from typing import List, Optional
 from pathlib import Path
 import logging
 
-from apps.api.modules.tables.models import TableCreate, TableResponse
+from packages.common.src.models.tables_models import TableCreate, TableResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

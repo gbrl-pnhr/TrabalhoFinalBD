@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from apps.api.core.database import get_db_connection
-from apps.api.modules.menu.models import DishCreate, DishResponse, DishUpdate
+from packages.common.src.models.menu_models import DishCreate, DishResponse, DishUpdate
 from apps.api.modules.menu.repository import MenuRepository
 
 router = APIRouter(prefix="/menu", tags=["Menu"])

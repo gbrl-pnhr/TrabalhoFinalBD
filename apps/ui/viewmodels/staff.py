@@ -42,6 +42,11 @@ class StaffViewModel:
         specialties: Set[str] = {c.specialty for c in self.chefs if c.specialty}
         return sorted(list(specialties))
 
+    def get_existing_shifts(self) -> List[str]:
+        """Extracts unique shifts from existing waiters for autocomplete."""
+        shifts: Set[str] = {w.shift for w in self.waiters if w.shift}
+        return sorted(list(shifts))
+
     def hire_waiter(
         self, name: str, cpf: str, salary: float, commission: float, shift: str
     ) -> bool:
