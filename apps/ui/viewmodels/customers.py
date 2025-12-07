@@ -67,7 +67,7 @@ class CustomersViewModel:
 
         try:
             payload = CustomerCreate(
-                name=form_data.name, email=form_data.email, phone=form_data.phone
+                nome=form_data.name, email=form_data.email, telefone=form_data.phone
             )
             self._service.create_customer(payload)
             self.load_customers()

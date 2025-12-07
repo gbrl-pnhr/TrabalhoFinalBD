@@ -22,7 +22,7 @@ class TableViewModel:
         self.last_error = None
         try:
             self.tables = self._service.get_tables()
-            self.tables.sort(key=lambda t: t.number)
+            self.tables.sort(key=lambda t: t.numero)
         except AppError as e:
             self.last_error = str(e)
             self.tables = []
@@ -35,19 +35,19 @@ class TableViewModel:
 
     def get_existing_locations(self) -> List[str]:
         """Extracts unique locations for the dropdown."""
-        locations: Set[str] = {t.location for t in self.tables if t.location}
+        locations: Set[str] = {t.localizacao for t in self.tables if t.localizacao}
         return sorted(list(locations))
 
     def get_next_suggestion(self) -> int:
         """Calculates the next available table number based on max current."""
         if not self.tables:
             return 1
-        occupied_numbers = [t.number for t in self.tables]
+        occupied_numbers = [t.numero for t in self.tables]
         return max(occupied_numbers) + 1
 
     def is_number_occupied(self, number: int) -> bool:
         """Checks if a table number already exists."""
-        return any(t.number == number for t in self.tables)
+        return any(t.numero == number for t in self.tables)
 
     def add_table(self, number: int, capacity: int, location: str) -> bool:
         """
@@ -69,7 +69,7 @@ class TableViewModel:
             return False
 
         try:
-            payload = TableCreate(number=number, capacity=capacity, location=location)
+            payload = TableCreate(numero=number, capacidade=capacity, localizacao=location)
             self._service.create_table(payload)
             return True
         except AppError as e:

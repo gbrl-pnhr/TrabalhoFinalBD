@@ -18,16 +18,16 @@ class WaiterRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating waiter: {waiter.name}")
+            logger.info(f"Creating waiter: {waiter.nome}")
             try:
                 cur.execute(
                     query,
                     {
-                        "name": waiter.name,
+                        "name": waiter.nome,
                         "cpf": waiter.cpf,
-                        "salary": waiter.salary,
-                        "shift": waiter.shift,
-                        "commission": waiter.commission,
+                        "salary": waiter.salario,
+                        "shift": waiter.turno,
+                        "commission": waiter.comissao,
                     },
                 )
                 row = cur.fetchone()
@@ -38,11 +38,11 @@ class WaiterRepository:
 
                 return WaiterResponse(
                     id=row["id_funcionario"],
-                    name=row["nome"],
+                    nome=row["nome"],
                     cpf=row["cpf"],
-                    salary=row["salario"],
-                    shift=row["turno"],
-                    commission=row["comissao"],
+                    salario=row["salario"],
+                    turno=row["turno"],
+                    comissao=row["comissao"],
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -60,11 +60,11 @@ class WaiterRepository:
             return [
                 WaiterResponse(
                     id=row["id_funcionario"],
-                    name=row["nome"],
+                    nome=row["nome"],
                     cpf=row["cpf"],
-                    salary=row["salario"],
-                    shift=row["turno"],
-                    commission=row["comissao"],
+                    salario=row["salario"],
+                    turno=row["turno"],
+                    comissao=row["comissao"],
                 )
                 for row in rows
             ]

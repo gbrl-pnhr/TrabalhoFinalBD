@@ -145,10 +145,10 @@ class OrdersView:
         Decorated with @st.fragment to enable granular re-rendering.
         Crucial Optimization: Accepts the full 'order' object to avoid N+1 API calls.
         """
-        if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
+        if not order or str(order.status).lower() in ['ABERTO', 'FECHADO', 'CANCELADO']:
             return
         t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
-        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.total_value:,.2f}"
+        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.valor_total:,.2f}"
         with st.expander(label, expanded=False):
             self._render_order_items_table(order)
             st.divider()
@@ -178,17 +178,17 @@ class OrdersView:
         Optimized rendering using native Python dictionaries and st.table.
         Avoids Pandas overhead for small data fragments.
         """
-        if not order.items:
+        if not order.itens:
             st.info("Nenhum item pedido ainda.")
             return
         items_data = [
             {
-                "Preço": i.dish_name,
-                "Quantidade": i.quantity,
-                "Preço": f"${i.unit_price:.2f}",
-                "Subtotal": f"${(i.unit_price * i.quantity):.2f}",
+                "Preço": i.nome_prato,
+                "Quantidade": i.quantidade,
+                "Preço": f"${i.preco_unitario:.2f}",
+                "Subtotal": f"${(i.preco_unitario * i.quantidade):.2f}",
             }
-            for i in order.items
+            for i in order.itens
         ]
         st.table(items_data)
 
@@ -212,12 +212,12 @@ class OrdersView:
             )
 
     def _render_remove_item_form(self, order):
-        if not order.items:
+        if not order.itens:
             st.info("Nenhum item para remover.")
             return
 
         items_map = {
-            item.id: f"{item.dish_name} (x{item.quantity})" for item in order.items
+            item.id: f"{item.nome_prato} (x{item.quantidade})" for item in order.itens
         }
 
         c1, c2 = st.columns([3, 1])

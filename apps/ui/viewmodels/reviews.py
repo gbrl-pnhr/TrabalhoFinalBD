@@ -34,7 +34,7 @@ class ReviewsViewModel:
     def get_dishes_map(self) -> Dict[int, str]:
         try:
             dishes = self._menu_service.get_dishes()
-            return {d.id: d.name for d in dishes}
+            return {d.id: d.nome for d in dishes}
         except AppError:
             return {}
 
@@ -47,8 +47,8 @@ class ReviewsViewModel:
             customers = self._customer_service.get_customers()
             eligible = {}
             for c in customers:
-                if any(str(o.status).upper() == "CLOSED" and o.items for o in c.orders):
-                    eligible[c.id] = c.name
+                if any(str(o.status).upper() == "CLOSED" and o.itens for o in c.pedidos):
+                    eligible[c.id] = c.nome
             return eligible
         except AppError:
             return {}
@@ -63,22 +63,22 @@ class ReviewsViewModel:
 
             items = []
             sorted_orders = sorted(
-                customer.orders, key=lambda o: o.created_at or "", reverse=True
+                customer.pedidos, key=lambda o: o.criado_em or "", reverse=True
             )
             for order in sorted_orders:
-                if str(order.status).upper() == "CLOSED" and order.items:
+                if str(order.status).upper() == "CLOSED" and order.itens:
                     date_lbl = (
-                        order.created_at.strftime("%Y-%m-%d")
-                        if order.created_at
+                        order.criado_em.strftime("%Y-%m-%d")
+                        if order.criado_em
                         else "?"
                     )
-                    for item in order.items:
+                    for item in order.itens:
                         items.append(
                             ReviewableItem(
-                                label=f"{item.dish_name} (Order #{order.id} - {date_lbl})",
+                                label=f"{item.nome_prato} (Order #{order.id} - {date_lbl})",
                                 order_id=order.id,
-                                dish_id=item.dish_id,
-                                dish_name=item.dish_name,
+                                dish_id=item.id_prato,
+                                dish_name=item.nome_prato,
                             )
                         )
             return items
@@ -90,7 +90,7 @@ class ReviewsViewModel:
 
     def update_review(self, review_id: int, rating: int, comment: str):
         self._review_service.update_review(
-            review_id, ReviewUpdate(rating=rating, comment=comment)
+            review_id, ReviewUpdate(nota=rating, comentario=comment)
         )
 
     def delete_review(self, review_id: int):

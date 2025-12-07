@@ -39,12 +39,12 @@ class StaffViewModel:
 
     def get_existing_specialties(self) -> List[str]:
         """Extracts unique specialties from existing chefs for autocomplete."""
-        specialties: Set[str] = {c.specialty for c in self.chefs if c.specialty}
+        specialties: Set[str] = {c.especialidade for c in self.chefs if c.especialidade}
         return sorted(list(specialties))
 
     def get_existing_shifts(self) -> List[str]:
         """Extracts unique shifts from existing waiters for autocomplete."""
-        shifts: Set[str] = {w.shift for w in self.waiters if w.shift}
+        shifts: Set[str] = {w.turno for w in self.waiters if w.turno}
         return sorted(list(shifts))
 
     def hire_waiter(
@@ -57,7 +57,7 @@ class StaffViewModel:
         self.last_error = None
         try:
             payload = WaiterCreate(
-                name=name, cpf=cpf, salary=salary, commission=commission, shift=shift
+                nome=name, cpf=cpf, salario=salary, comissao=commission, turno=shift
             )
             self._service.create_waiter(payload)
             return True
@@ -85,7 +85,7 @@ class StaffViewModel:
         """
         self.last_error = None
         try:
-            payload = ChefCreate(name=name, cpf=cpf, salary=salary, specialty=specialty)
+            payload = ChefCreate(nome=name, cpf=cpf, salario=salary, especialidade=specialty)
             self._service.create_chef(payload)
             return True
         except AppError as e:

@@ -37,11 +37,11 @@ class StaffView:
                 st.info("No waiters found.")
             else:
                 for w in self.vm.waiters:
-                    with st.expander(f"{w.name} (ID: {w.id})"):
+                    with st.expander(f"{w.nome} (ID: {w.id})"):
                         st.write(f"**CPF:** {w.cpf}")
-                        st.write(f"**Shift:** {w.shift}")
-                        st.write(f"**Salary:** ${w.salary:,.2f}")
-                        st.write(f"**Commission:** {w.commission}%")
+                        st.write(f"**Shift:** {w.turno}")
+                        st.write(f"**Salary:** ${w.salario:,.2f}")
+                        st.write(f"**Commission:** {w.comissao}%")
 
                         if st.button("🔥 Fire Waiter", key=f"del_w_{w.id}"):
                             if self.vm.fire_waiter(w.id):
@@ -104,10 +104,10 @@ class StaffView:
                 st.info("No chefs found.")
             else:
                 for c in self.vm.chefs:
-                    with st.expander(f"{c.name} (ID: {c.id})"):
+                    with st.expander(f"{c.nome} (ID: {c.id})"):
                         st.write(f"**CPF:** {c.cpf}")
-                        st.write(f"**Salary:** ${c.salary:,.2f}")
-                        st.write(f"**Specialty:** {c.specialty}")
+                        st.write(f"**Salary:** ${c.salario:,.2f}")
+                        st.write(f"**Specialty:** {c.especialidade}")
                         if st.button("🔥 Fire Chef", key=f"del_c_{c.id}"):
                             if self.vm.fire_chef(c.id):
                                 st.toast("✅ Chef terminated successfully.")

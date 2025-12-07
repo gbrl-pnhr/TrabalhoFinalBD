@@ -29,13 +29,13 @@ class OrderService:
         Opens a new order.
         Validates that customer count does not exceed table capacity.
         """
-        table = self.table_repo.get_table_by_id(order_data.table_id)
+        table = self.table_repo.get_table_by_id(order_data.id_mesa)
         if not table:
             raise HTTPException(status_code=404, detail="Table not found")
-        if order_data.customer_count > table.capacity:
+        if order_data.quantidade_cliente > table.capacidade:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Table capacity exceeded. Table fits {table.capacity}, but request has {order_data.customer_count} people.",
+                detail=f"Table capacity exceeded. Table fits {table.capacidade}, but request has {order_data.quantidade_cliente} people.",
             )
         try:
             new_id = self.order_repo.create_order(order_data)
@@ -52,10 +52,10 @@ class OrderService:
         order = self.order_repo.get_order_details(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
-        calc_total = sum(i.total_price for i in order.items)
-        if abs(calc_total - order.total_value) > Decimal("0.01"):
+        calc_total = sum(i.preco_total for i in order.itens)
+        if abs(calc_total - order.valor_total) > Decimal("0.01"):
             logger.warning(
-                f"Order {order_id} total mismatch. DB: {order.total_value}, Calc: {calc_total}"
+                f"Order {order_id} total mismatch. DB: {order.valor_total}, Calc: {calc_total}"
             )
 
         return order
@@ -81,7 +81,7 @@ class OrderService:
             )
         try:
             dishes = self.menu_repo.get_all_dishes()
-            target_dish = next((d for d in dishes if d.id == item_data.dish_id), None)
+            target_dish = next((d for d in dishes if d.id == item_data.id_prato), None)
             if not target_dish:
                 raise HTTPException(status_code=404, detail="Dish not found")
             self.item_repo.add_item(order_id, item_data)
@@ -123,5 +123,5 @@ class OrderService:
     def _recalculate_total(self, order_id: int):
         """Helper to sum items and update order header."""
         items = self.item_repo.get_items_by_order(order_id)
-        new_total = sum(i.total_price for i in items)
+        new_total = sum(i.preco_total for i in items)
         self.order_repo.update_order_total(order_id, new_total)

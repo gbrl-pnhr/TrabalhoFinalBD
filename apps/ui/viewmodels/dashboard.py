@@ -60,7 +60,7 @@ class DashboardViewModel:
         if not self._revenue_data:
             return KPIMetrics(0.0, 0.0, 0, is_online=not self.has_error)
 
-        total = sum(r.total_revenue for r in self._revenue_data)
+        total = sum(r.receita_total for r in self._revenue_data)
         count = len(self._revenue_data)
         avg = total / count if count > 0 else 0.0
 

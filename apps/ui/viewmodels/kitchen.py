@@ -48,8 +48,8 @@ class KitchenViewModel:
             # Filter: Open orders that have items
             active_orders = [
                 o for o in orders
-                if str(o.status).lower() not in ["closed", "paid", "completed"]
-                and o.items
+                if str(o.status).lower() not in ['ABERTO', 'FECHADO', 'CANCELADO']
+                and o.itens
             ]
             self.tickets = [self._to_ticket(o) for o in active_orders]
             self.last_updated = datetime.now().strftime("%H:%M:%S")
@@ -62,12 +62,12 @@ class KitchenViewModel:
         # 1. Calculate Time Label
         time_label = "Just Now"
         is_alert = False
-        if hasattr(order, "created_at") and order.created_at:
+        if hasattr(order, "created_at") and order.criado_em:
             try:
-                if isinstance(order.created_at, datetime):
-                    created_dt = order.created_at
+                if isinstance(order.criado_em, datetime):
+                    created_dt = order.criado_em
                 else:
-                    created_dt = datetime.fromisoformat(str(order.created_at))
+                    created_dt = datetime.fromisoformat(str(order.criado_em))
 
                 delta = datetime.now() - created_dt
                 minutes = int(delta.total_seconds() / 60)
@@ -85,11 +85,11 @@ class KitchenViewModel:
         # 3. Map Items
         items = [
             KitchenTicketItem(
-                quantity=i.quantity,
-                dish_name=i.dish_name,
-                notes=i.notes
+                quantity=i.quantidade,
+                dish_name=i.nome_prato,
+                notes=i.observacoes
             )
-            for i in order.items
+            for i in order.itens
         ]
 
         return KitchenTicket(

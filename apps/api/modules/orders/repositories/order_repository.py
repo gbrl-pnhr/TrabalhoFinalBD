@@ -23,15 +23,15 @@ class OrderRepository:
 
         with self.conn.cursor() as cur:
             logger.info(
-                f"Opening order for Customer {order.customer_id} at Table {order.table_id}"
+                f"Opening order for Customer {order.id_cliente} at Table {order.id_mesa}"
             )
             cur.execute(
                 query,
                 {
-                    "customer_id": order.customer_id,
-                    "table_id": order.table_id,
-                    "waiter_id": order.waiter_id,
-                    "people_count": order.customer_count,
+                    "customer_id": order.id_cliente,
+                    "table_id": order.id_mesa,
+                    "waiter_id": order.id_garcom,
+                    "people_count": order.quantidade_cliente,
                 },
             )
             row = cur.fetchone()
@@ -54,17 +54,17 @@ class OrderRepository:
             items_list = [OrderItemResponse(**item) for item in items_data]
         return OrderResponse(
             id=row["id_pedido"],
-            customer_id=row["id_cliente"],
-            created_at=row["data_pedido"],
-            total_value=row["valor_total"],
+            id_cliente=row["id_cliente"],
+            criado_em=row["data_pedido"],
+            valor_total=row["valor_total"],
             status=row["status"],
-            customer_count=row["quantidade_pessoas"],
-            customer_name=row["cliente_nome"],
-            table_id=row["id_mesa"],
-            waiter_id=row["id_garcom"],
-            table_number=row["mesa_numero"],
-            waiter_name=row["garcom_nome"],
-            items=items_list,
+            quantidade_cliente=row["quantidade_pessoas"],
+            nome_cliente=row["cliente_nome"],
+            id_mesa=row["id_mesa"],
+            id_garcom=row["id_garcom"],
+            numero_mesa=row["mesa_numero"],
+            nome_garcom=row["garcom_nome"],
+            itens=items_list,
         )
 
     def get_order_details(self, order_id: int) -> Optional[OrderResponse]:

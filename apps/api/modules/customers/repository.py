@@ -23,13 +23,13 @@ class CustomerRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating customer: {customer.name}")
+            logger.info(f"Creating customer: {customer.nome}")
             try:
                 cur.execute(
                     query,
                     {
-                        "name": customer.name,
-                        "phone": customer.phone,
+                        "name": customer.nome,
+                        "phone": customer.telefone,
                         "email": customer.email,
                     },
                 )
@@ -41,10 +41,10 @@ class CustomerRepository:
 
                 return CustomerResponse(
                     id=row["id_cliente"],
-                    name=row["nome"],
-                    phone=row["telefone"],
+                    nome=row["nome"],
+                    telefone=row["telefone"],
                     email=row["email"],
-                    orders=[],  # New customer has no orders
+                    pedidos=[],  # New customer has no orders
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -69,10 +69,10 @@ class CustomerRepository:
                 results.append(
                     CustomerResponse(
                         id=row["id_cliente"],
-                        name=row["nome"],
-                        phone=row["telefone"],
+                        nome=row["nome"],
+                        telefone=row["telefone"],
                         email=row["email"],
-                        orders=orders_list,
+                        pedidos=orders_list,
                     )
                 )
             return results

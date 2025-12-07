@@ -8,7 +8,7 @@ SELECT
             SELECT 1
             FROM pedido p
             WHERE p.id_mesa = m.id_mesa
-            AND p.status = 'OPEN'
+            AND p.status = 'ABERTO'
         ) THEN true
         ELSE false
     END as is_occupied

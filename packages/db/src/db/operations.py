@@ -5,13 +5,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from faker import Faker
 from yoyo import read_migrations, get_backend
-
 from .config import logger, settings
 
 SEEDS_DIR = Path(__file__).resolve().parents[2] / "seeds"
+END_DATE = datetime.now()
+START_DATE = END_DATE - timedelta(days=30)
 
-START_DATE = datetime(2025, 11, 1)
-END_DATE = datetime(2025, 12, 5)
 MENU_ITEMS = {
     1: ("Bruschetta Clássica", 25.00, "Entrada"),
     2: ("Carpaccio de Carne", 32.00, "Entrada"),
@@ -34,10 +33,11 @@ MENU_ITEMS = {
     19: ("Vinho Tinto Taça", 25.00, "Bebida"),
     20: ("Caipirinha", 22.00, "Bebida"),
 }
+
 STAFF_COUNT_WAITERS = 5
-STAFF_COUNT_CHEFS = 3
-CUSTOMER_COUNT = 75
-TABLE_COUNT = 30
+STAFF_COUNT_CHEFS = 5
+CUSTOMER_COUNT = 50
+TABLE_COUNT = 10
 
 fake = Faker("pt_BR")
 Faker.seed(42)
@@ -53,21 +53,24 @@ def generate_001_infrastructure(output_dir: Path):
     logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("-- 001_seed_infrastructure.sql\n")
-        f.write("-- Tables (Mesa), Staff (Garcom/Cozinheiro), and Menu (Prato)\n\n")
+        f.write("-- Tables (Mesa), Staff (Garcom/Cozinheiro), and Menu (Prato)\n")
+        f.write("-- Using RESTART IDENTITY to reset IDs to 1\n\n")
 
-        # Added TRUNCATE to clean tables before seeding
-        f.write("TRUNCATE TABLE mesa, garcom, cozinheiro, prato CASCADE;\n\n")
+        f.write(
+            "TRUNCATE TABLE mesa, garcom, cozinheiro, prato RESTART IDENTITY CASCADE;\n\n"
+        )
 
-        f.write("INSERT INTO mesa (id_mesa, numero, capacidade, localizacao) VALUES\n")
+        # MESA
+        f.write("INSERT INTO mesa (numero, capacidade, localizacao) VALUES\n")
         rows = []
         for i in range(1, TABLE_COUNT + 1):
             cap = random.choice([2, 4, 6, 8])
             loc = random.choice(["Interna", "Externa", "Varanda"])
-            rows.append(f"({i}, {i}, {cap}, '{loc}')")
+            rows.append(f"({i}, {cap}, '{loc}')")
         f.write(",\n".join(rows) + ";\n\n")
-        f.write(
-            "INSERT INTO garcom (id_funcionario, nome, cpf, salario, turno, comissao) VALUES\n"
-        )
+
+        # GARCOM
+        f.write("INSERT INTO garcom (nome, cpf, salario, turno, comissao) VALUES\n")
         w_rows = []
         for i in range(1, STAFF_COUNT_WAITERS + 1):
             name = escape_sql_string(fake.name())
@@ -75,23 +78,21 @@ def generate_001_infrastructure(output_dir: Path):
             salario = random.choice([1500.00, 1800.00, 2000.00])
             turno = random.choice(["Manhã", "Noite"])
             comissao = 5.00
-            w_rows.append(f"({i}, '{name}', '{cpf}', {salario}, '{turno}', {comissao})")
+            w_rows.append(f"('{name}', '{cpf}', {salario}, '{turno}', {comissao})")
         f.write(",\n".join(w_rows) + ";\n\n")
-        f.write(
-            "INSERT INTO cozinheiro (id_funcionario, nome, cpf, salario, especialidade) VALUES\n"
-        )
+        f.write("INSERT INTO cozinheiro (nome, cpf, salario, especialidade) VALUES\n")
         c_rows = []
         for i in range(1, STAFF_COUNT_CHEFS + 1):
             name = escape_sql_string(fake.name())
             cpf = fake.cpf().replace(".", "").replace("-", "")
             salario = random.choice([2500.00, 3200.00, 4000.00])
             spec = random.choice(["Massas", "Grelhados", "Sobremesas"])
-            c_rows.append(f"({i}, '{name}', '{cpf}', {salario}, '{spec}')")
+            c_rows.append(f"('{name}', '{cpf}', {salario}, '{spec}')")
         f.write(",\n".join(c_rows) + ";\n\n")
-        f.write("INSERT INTO prato (id_prato, nome, preco, categoria) VALUES\n")
+        f.write("INSERT INTO prato (nome, preco, categoria) VALUES\n")
         d_rows = []
-        for d_id, (name, price, cat) in MENU_ITEMS.items():
-            d_rows.append(f"({d_id}, '{escape_sql_string(name)}', {price}, '{cat}')")
+        for d_id, (name, price, cat) in sorted(MENU_ITEMS.items()):
+            d_rows.append(f"('{escape_sql_string(name)}', {price}, '{cat}')")
         f.write(",\n".join(d_rows) + ";\n\n")
 
 
@@ -100,17 +101,15 @@ def generate_002_customers(output_dir: Path):
     logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("-- 002_seed_customers.sql\n\n")
+        f.write("TRUNCATE TABLE cliente RESTART IDENTITY CASCADE;\n\n")
 
-        # Added TRUNCATE
-        f.write("TRUNCATE TABLE cliente CASCADE;\n\n")
-
-        f.write("INSERT INTO cliente (id_cliente, nome, telefone, email) VALUES\n")
+        f.write("INSERT INTO cliente (nome, telefone, email) VALUES\n")
         rows = []
         for i in range(1, CUSTOMER_COUNT + 1):
             name = escape_sql_string(fake.name())
             email = f"cliente{i}@exemplo.com"
             phone = fake.phone_number()[:15]
-            rows.append(f"({i}, '{name}', '{phone}', '{email}')")
+            rows.append(f"('{name}', '{phone}', '{email}')")
         f.write(",\n".join(rows) + ";\n")
 
 
@@ -121,10 +120,8 @@ def generate_003_orders(output_dir: Path, orders_list: list):
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("-- 003_seed_orders.sql\n")
         f.write("-- Pedido and Item_Pedido\n\n")
-
-        # Added TRUNCATE
-        f.write("TRUNCATE TABLE pedido, item_pedido CASCADE;\n\n")
-
+        f.write("TRUNCATE TABLE pedido, item_pedido RESTART IDENTITY CASCADE;\n")
+        f.write("ALTER TABLE pedido ALTER COLUMN id_pedido RESTART WITH 1000;\n\n")
         curr_date = START_DATE
         while curr_date <= END_DATE:
             is_weekend = curr_date.weekday() >= 4
@@ -147,14 +144,14 @@ def generate_003_orders(output_dir: Path, orders_list: list):
                 dt_str = curr_date.replace(hour=h, minute=m).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
-                status = "CLOSED"
+                status = "FECHADO"
                 if curr_date.date() == END_DATE.date() and random.random() < 0.3:
-                    status = "OPEN"
+                    status = "ABERTO"
                 num_items = random.randint(1, 5)
                 selected_dishes = random.choices(list(MENU_ITEMS.keys()), k=num_items)
                 total_amount = 0.0
                 people_count = random.randint(1, 4)
-                if status == "CLOSED":
+                if status == "FECHADO":
                     orders_list.append(
                         {
                             "id": o_id,
@@ -171,18 +168,21 @@ def generate_003_orders(output_dir: Path, orders_list: list):
                         obs = "'Sem cebola'" if "Salada" in name else "'Bem passado'"
                     day_items_sql.append(f"({o_id}, {d_id}, {qty}, {obs})")
                 day_orders_sql.append(
-                    f"({o_id}, '{dt_str}', {total_amount:.2f}, {cust_id}, {table_id}, {waiter_id}, '{status}', {people_count})"
+                    f"('{dt_str}', {total_amount:.2f}, {cust_id}, {table_id}, {waiter_id}, '{status}', {people_count})"
                 )
+
             if day_orders_sql:
                 f.write(f"-- Pedidos for {curr_date.date()}\n")
                 f.write(
-                    "INSERT INTO pedido (id_pedido, data_pedido, valor_total, id_cliente, id_mesa, id_funcionario, status, quantidade_pessoas) VALUES\n"
+                    "INSERT INTO pedido (data_pedido, valor_total, id_cliente, id_mesa, id_funcionario, status, quantidade_pessoas) VALUES\n"
                 )
                 f.write(",\n".join(day_orders_sql) + ";\n")
+
                 f.write(
                     "INSERT INTO item_pedido (id_pedido, id_prato, quantidade, observacao) VALUES\n"
                 )
                 f.write(",\n".join(day_items_sql) + ";\n\n")
+
             curr_date += timedelta(days=1)
 
 
@@ -191,22 +191,22 @@ def generate_004_reviews(output_dir: Path, orders_list: list):
     logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("-- 004_seed_reviews.sql\n\n")
-
-        # Added TRUNCATE
-        f.write("TRUNCATE TABLE avaliacao CASCADE;\n\n")
-
+        f.write("TRUNCATE TABLE avaliacao RESTART IDENTITY CASCADE;\n\n")
         f.write(
             "INSERT INTO avaliacao (id_cliente, id_prato, id_pedido, nota, comentario) VALUES\n"
         )
         review_rows = []
         if not orders_list:
             return
+
         orders_to_review = random.sample(orders_list, k=int(len(orders_list) * 0.7))
+
         for order in orders_to_review:
             if not order["items"]:
                 continue
             dish_id = random.choice(order["items"])
             rating = random.choices([1, 2, 3, 4, 5], weights=[5, 5, 15, 40, 35])[0]
+
             comments_map = {
                 5: [
                     "Incrível!",
@@ -231,43 +231,18 @@ def generate_004_reviews(output_dir: Path, orders_list: list):
             f.write(",\n".join(review_rows) + ";\n")
 
 
-def generate_005_reset_sequences(output_dir: Path):
-    filepath = output_dir / "005_reset_sequences.sql"
-    logger.debug(f"Generating {filepath.name}...")
-
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 005_reset_sequences.sql\n")
-        f.write("-- Reset auto-increment sequences after manual ID insertion\n\n")
-        tables_to_reset = [
-            ("cliente", "id_cliente"),
-            ("mesa", "id_mesa"),
-            ("prato", "id_prato"),
-            ("garcom", "id_funcionario"),
-            ("cozinheiro", "id_funcionario"),
-            ("pedido", "id_pedido"),
-        ]
-        for table, col in tables_to_reset:
-            f.write(
-                f"SELECT setval(pg_get_serial_sequence('{table}', '{col}'), (SELECT MAX({col}) FROM {table}));\n"
-            )
-        f.write(
-            "SELECT setval(pg_get_serial_sequence('item_pedido', 'id_item_pedido'), (SELECT MAX(id_item_pedido) FROM item_pedido));\n"
-        )
-        f.write(
-            "SELECT setval(pg_get_serial_sequence('avaliacao', 'id_avaliacao'), (SELECT MAX(id_avaliacao) FROM avaliacao));\n"
-        )
-
-
 def generate_seeds() -> None:
     output_dir = SEEDS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     orders_list = []
     logger.info(f"Generating seeds in: {output_dir}")
+
     generate_001_infrastructure(output_dir)
     generate_002_customers(output_dir)
     generate_003_orders(output_dir, orders_list)
     generate_004_reviews(output_dir, orders_list)
     generate_005_reset_sequences(output_dir)
+
     logger.info("Seed files generated successfully.")
 
 
@@ -397,3 +372,6 @@ def apply_seeds() -> None:
     finally:
         cursor.close()
         conn.close()
+
+if __name__ == "__main__":
+    generate_seeds()

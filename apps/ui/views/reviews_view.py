@@ -49,15 +49,15 @@ class ReviewsView:
 
     def _render_single_review(self, rev):
         with st.chat_message("user"):
-            st.markdown(f"**{rev.rating}/5** ⭐")
-            st.markdown(f"_{rev.comment}_")
+            st.markdown(f"**{rev.nota}/5** ⭐")
+            st.markdown(f"_{rev.comentario}_")
             cust = getattr(rev, "customer_name", "Anonymous")
             st.caption(f"— {cust}")
 
             with st.expander("Admin Controls"):
                 with st.form(key=f"edit_{rev.id}"):
-                    r = st.slider("Rating", 1, 5, rev.rating)
-                    c = st.text_area("Comment", rev.comment)
+                    r = st.slider("Rating", 1, 5, rev.nota)
+                    c = st.text_area("Comment", rev.comentario)
                     if st.form_submit_button("Save"):
                         try:
                             self.vm.update_review(rev.id, r, c)
@@ -101,11 +101,11 @@ class ReviewsView:
                 comment = st.text_area("Comment")
                 if st.form_submit_button("Submit Review"):
                     payload = ReviewCreate(
-                        customer_id=cust_id,
-                        dish_id=selected_item.dish_id,
-                        order_id=selected_item.order_id,
-                        rating=rating,
-                        comment=comment,
+                        id_cliente=cust_id,
+                        id_prato=selected_item.dish_id,
+                        id_pedido=selected_item.order_id,
+                        nota=rating,
+                        comentario=comment,
                     )
                     try:
                         self.vm.submit_review(payload)

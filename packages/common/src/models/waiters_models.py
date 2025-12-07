@@ -7,15 +7,15 @@ from validate_docbr import CPF
 class WaiterBase(BaseModel):
     """Base fields for a Waiter."""
 
-    name: str = Field(
+    nome: str = Field(
         ..., min_length=1, max_length=100, description="Full name of the waiter"
     )
     cpf: str = Field(..., description="CPF (11 digits, strictly validated)")
-    salary: Decimal = Field(..., gt=0, decimal_places=2, description="Monthly salary")
-    shift: Optional[str] = Field(
+    salario: Decimal = Field(..., gt=0, decimal_places=2, description="Monthly salary")
+    turno: Optional[str] = Field(
         None, max_length=20, description="Work shift (e.g., Morning, Night)"
     )
-    commission: Optional[Decimal] = Field(
+    comissao: Optional[Decimal] = Field(
         None, ge=0, decimal_places=2, description="Commission percentage"
     )
 

@@ -34,10 +34,10 @@ class MenuRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating dish: {dish.name}")
+            logger.info(f"Creating dish: {dish.nome}")
             cur.execute(
                 query,
-                {"name": dish.name, "price": dish.price, "category": dish.category},
+                {"name": dish.nome, "price": dish.preco, "category": dish.categoria},
             )
             row = cur.fetchone()
             self.conn.commit()
@@ -45,10 +45,10 @@ class MenuRepository:
                 raise Exception("Failed to insert dish")
             return DishResponse(
                 id=row["id_prato"],
-                name=row["nome"],
-                price=row["preco"],
-                category=row["categoria"],
-                reviews=[],
+                nome=row["nome"],
+                preco=row["preco"],
+                categoria=row["categoria"],
+                avaliacoes=[],
             )
 
     def get_all_dishes(self) -> List[DishResponse]:
@@ -69,10 +69,10 @@ class MenuRepository:
                 results.append(
                     DishResponse(
                         id=row["id_prato"],
-                        name=row["nome"],
-                        price=row["preco"],
-                        category=row["categoria"],
-                        reviews=reviews_list,
+                        nome=row["nome"],
+                        preco=row["preco"],
+                        categoria=row["categoria"],
+                        avaliacoes=reviews_list,
                     )
                 )
             return results
@@ -88,9 +88,9 @@ class MenuRepository:
             cur.execute(
                 query,
                 {
-                    "name": dish.name,
-                    "price": dish.price,
-                    "category": dish.category,
+                    "name": dish.nome,
+                    "price": dish.preco,
+                    "category": dish.categoria,
                     "id": dish_id,
                 },
             )
@@ -102,8 +102,8 @@ class MenuRepository:
 
             return DishResponse(
                 id=row["id_prato"],
-                name=row["nome"],
-                price=row["preco"],
-                category=row["categoria"],
-                reviews=[],
+                nome=row["nome"],
+                preco=row["preco"],
+                categoria=row["categoria"],
+                avaliacoes=[],
             )

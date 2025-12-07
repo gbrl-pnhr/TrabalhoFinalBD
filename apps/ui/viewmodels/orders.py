@@ -80,12 +80,12 @@ class OrdersViewModel:
                 customers = future_cust.result()
                 tables = future_tables.result()
                 waiters = future_waiters.result()
-                cust_map = {c.id: c.name for c in customers}
-                waiter_map = {w.id: w.name for w in waiters}
+                cust_map = {c.id: c.nome for c in customers}
+                waiter_map = {w.id: w.nome for w in waiters}
                 table_map = {
-                    t.id: f"Table {t.number} ({t.capacity} Seats) - {t.location}"
+                    t.id: f"Table {t.numero} ({t.capacidade} Seats) - {t.localizacao}"
                     for t in tables
-                    if not t.is_occupied
+                    if not t.eh_ocupada
                 }
                 return NewOrderOptions(
                     customers=cust_map, tables=table_map, waiters=waiter_map
@@ -102,9 +102,9 @@ class OrdersViewModel:
         try:
             tables = self._table_service.get_tables()
             selected = next((t for t in tables if t.id == table_id), None)
-            if selected and guest_count > selected.capacity:
+            if selected and guest_count > selected.capacidade:
                 return (
-                    f"⚠️ Capacity Exceeded! Table {selected.number} holds {selected.capacity}, "
+                    f"⚠️ Capacity Exceeded! Table {selected.numero} holds {selected.capacidade}, "
                     f"but you have {guest_count} guests."
                 )
         except AppError:
@@ -117,10 +117,10 @@ class OrdersViewModel:
         self.last_error = None
         try:
             payload = OrderCreate(
-                customer_id=customer_id,
-                table_id=table_id,
-                waiter_id=waiter_id,
-                customer_count=count,
+                id_cliente=customer_id,
+                id_mesa=table_id,
+                id_garcom=waiter_id,
+                quantidade_cliente=count,
             )
             self._order_service.create_order(payload)
             return True
@@ -135,7 +135,7 @@ class OrdersViewModel:
             return False
 
         try:
-            item = OrderItemCreate(dish_id=dish_id, quantity=quantity)
+            item = OrderItemCreate(id_prato=dish_id, quantidade=quantity)
             self._order_service.add_item(order_id, item)
             return True
         except AppError as e:

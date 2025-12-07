@@ -30,7 +30,7 @@ FROM pedido p
     JOIN garcom g ON p.id_funcionario = g.id_funcionario
     LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
     LEFT JOIN prato pr ON ip.id_prato = pr.id_prato
-WHERE p.status = 'OPEN'
+WHERE p.status = 'ABERTO'
 GROUP BY
     p.id_pedido,
     p.id_cliente,

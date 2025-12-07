@@ -78,7 +78,7 @@ class TablesView:
         if not self.vm.tables:
             st.caption("No tables to remove.")
             return
-        table_map = {t.id: f"Table {t.number} ({t.location})" for t in self.vm.tables}
+        table_map = {t.id: f"Table {t.numero} ({t.localizacao})" for t in self.vm.tables}
 
         selected_id = st.selectbox(
             "Select Table", options=table_map.keys(), format_func=lambda x: table_map[x]
