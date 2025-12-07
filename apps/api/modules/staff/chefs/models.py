@@ -24,7 +24,7 @@ class ChefBase(BaseModel):
         """
         cpf_validator = CPF()
         if not cpf_validator.validate(v):
-            raise ValueError("Invalid CPF provided.")
+            raise ValueError("O CPF informado é inválido. Verifique os dígitos.")
         return f"{cpf_validator.mask(v)}".replace(".", "").replace("-", "")
 
 

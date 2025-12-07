@@ -14,7 +14,7 @@ class ChefRepository:
 
     def create_chef(self, chef: ChefCreate) -> ChefResponse:
         """Register a new chef."""
-        sql_file = QUERY_PATH / "insert.sql"
+        sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:

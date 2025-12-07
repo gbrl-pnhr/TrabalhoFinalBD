@@ -40,9 +40,12 @@ class OrderRepository:
                 raise Exception("Failed to create order")
             return row["id_pedido"]
 
-    def _map_row_to_response(self, row) -> OrderResponse:
+    @staticmethod
+    def _map_row_to_response(row) -> OrderResponse:
         """Helper to map a DB row to OrderResponse."""
-        items_data = row["items"]
+        items_data = row.get(
+            "items"
+        )
         if isinstance(items_data, str):
             items_data = json.loads(items_data)
         if not items_data:
@@ -51,6 +54,7 @@ class OrderRepository:
             items_list = [OrderItemResponse(**item) for item in items_data]
         return OrderResponse(
             id=row["id_pedido"],
+            customer_id=row["id_cliente"],
             created_at=row["data_pedido"],
             total_value=row["valor_total"],
             status=row["status"],

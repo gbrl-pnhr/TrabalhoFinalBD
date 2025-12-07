@@ -7,6 +7,7 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'id', p.id_pedido,
+                'customer_id', c.id_cliente,
                 'created_at', p.data_pedido,
                 'total_value', p.valor_total,
                 'status', p.status,

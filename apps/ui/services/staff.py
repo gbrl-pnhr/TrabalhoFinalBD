@@ -1,4 +1,5 @@
 import sys
+import json
 from pathlib import Path
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
@@ -21,7 +22,8 @@ class StaffService:
 
     def create_waiter(self, waiter_data: WaiterCreate) -> WaiterResponse:
         """Register a new waiter."""
-        response = self.client.post("/staff/waiters", waiter_data.model_dump())
+        payload = json.loads(waiter_data.model_dump_json())
+        response = self.client.post("/staff/waiters", payload)
         return WaiterResponse.model_validate(response)
 
     def delete_waiter(self, waiter_id: int) -> None:
@@ -35,7 +37,8 @@ class StaffService:
 
     def create_chef(self, chef_data: ChefCreate) -> ChefResponse:
         """Register a new chef."""
-        response = self.client.post("/staff/chefs", chef_data.model_dump())
+        payload = json.loads(chef_data.model_dump_json())
+        response = self.client.post("/staff/chefs", payload)
         return ChefResponse.model_validate(response)
 
     def delete_chef(self, chef_id: int) -> None:

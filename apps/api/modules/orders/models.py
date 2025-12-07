@@ -35,8 +35,8 @@ class OrderCreate(BaseModel):
 
 class OrderResponse(BaseModel):
     """Schema for Order Header details."""
-
     id: int = Field(..., description="Unique identifier of the order")
+    customer_id: int = Field(..., description="ID of the customer")
     created_at: datetime = Field(..., description="Timestamp of creation")
     total_value: Decimal = Field(..., description="Total accumulated value")
     status: OrderStatus = Field(..., description="Current status of the order")

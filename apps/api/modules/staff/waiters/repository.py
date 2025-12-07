@@ -14,7 +14,7 @@ class WaiterRepository:
 
     def create_waiter(self, waiter: WaiterCreate) -> WaiterResponse:
         """Register a new waiter."""
-        sql_file = QUERY_PATH / "insert.sql"
+        sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:

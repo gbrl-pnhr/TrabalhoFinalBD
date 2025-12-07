@@ -1,5 +1,6 @@
 SELECT
     p.id_pedido,
+    p.id_cliente,
     p.data_pedido,
     p.valor_total,
     p.status,
@@ -32,6 +33,7 @@ FROM pedido p
 WHERE p.id_pedido = %(order_id)s
 GROUP BY
     p.id_pedido,
+    p.id_cliente,
     p.data_pedido,
     p.valor_total,
     p.status,
