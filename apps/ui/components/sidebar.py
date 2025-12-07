@@ -25,9 +25,12 @@ def render_global_sidebar(pages_structure):
         pages_structure: The dictionary or list of st.Page objects used in main.py
     """
     is_online = get_api_status()
-
+    logo_path = Path(__file__).parent.parent / "assets" / "logo.png"
     with st.sidebar:
-        st.image("https://cdn-icons-png.flaticon.com/512/3448/3448609.png", width=50)
+        if logo_path.exists():
+            st.image(str(logo_path), width=50)
+        else:
+            st.image("https://cdn-icons-png.flaticon.com/512/3448/3448609.png", width=50)
         st.title("Restaurant OS")
         with st.container(border=True):
             st.caption("System Status")
