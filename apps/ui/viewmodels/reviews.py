@@ -47,7 +47,7 @@ class ReviewsViewModel:
             customers = self._customer_service.get_customers()
             eligible = {}
             for c in customers:
-                if any(str(o.status).upper() == "CLOSED" and o.itens for o in c.pedidos):
+                if any(str(o.status).upper() == "FECHADO" and o.itens for o in c.pedidos):
                     eligible[c.id] = c.nome
             return eligible
         except AppError:
@@ -55,18 +55,16 @@ class ReviewsViewModel:
 
     def get_customer_reviewable_items(self, customer_id: int) -> List[ReviewableItem]:
         try:
-            # Optimized fetch or filter logic could go here
             all_customers = self._customer_service.get_customers()
             customer = next((c for c in all_customers if c.id == customer_id), None)
             if not customer:
                 return []
-
             items = []
             sorted_orders = sorted(
                 customer.pedidos, key=lambda o: o.criado_em or "", reverse=True
             )
             for order in sorted_orders:
-                if str(order.status).upper() == "CLOSED" and order.itens:
+                if str(order.status).upper() == "FECHADO" and order.itens:
                     date_lbl = (
                         order.criado_em.strftime("%Y-%m-%d")
                         if order.criado_em

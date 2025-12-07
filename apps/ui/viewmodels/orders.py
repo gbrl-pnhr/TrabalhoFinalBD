@@ -23,11 +23,6 @@ class NewOrderOptions:
 
 
 class OrdersViewModel:
-    """
-    Business Logic for the Orders Page.
-    Handles data state and command execution.
-    """
-
     def __init__(
         self,
         order_service: OrderService,
@@ -50,7 +45,7 @@ class OrdersViewModel:
             self.active_orders = [
                 o
                 for o in all_orders
-                if str(o.status).lower() not in ["closed", "paid", "completed"]
+                if str(o.status).upper() not in ["FECHADO", "CANCELADO"]
             ]
             self.active_orders.sort(key=lambda x: x.id, reverse=True)
         except AppError as e:

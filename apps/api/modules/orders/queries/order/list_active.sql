@@ -14,12 +14,12 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'id', ip.id_item_pedido,
-                'dish_id', pr.id_prato,
-                'quantity', ip.quantidade,
-                'notes', ip.observacao,
-                'dish_name', pr.nome,
-                'unit_price', pr.preco,
-                'total_price', (ip.quantidade * pr.preco)
+                'id_prato', pr.id_prato,
+                'quantidade', ip.quantidade,
+                'observacoes', ip.observacao,
+                'nome_prato', pr.nome,
+                'preco_unitario', pr.preco,
+                'preco_total', (ip.quantidade * pr.preco)
             )
         ) FILTER (WHERE ip.id_item_pedido IS NOT NULL),
         '[]'

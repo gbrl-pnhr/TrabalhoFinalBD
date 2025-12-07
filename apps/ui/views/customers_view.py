@@ -37,7 +37,7 @@ class CustomersView:
 
         df = self.vm.get_customers_dataframe()
 
-        cols = ["id", "name", "email", "phone_number"]
+        cols = ["id", "nome", "email", "telefone"]
         display_cols = [c for c in cols if c in df.columns]
 
         st.dataframe(
@@ -46,9 +46,9 @@ class CustomersView:
             hide_index=True,
             column_config={
                 "id": st.column_config.NumberColumn("ID", format="%d"),
-                "name": "Full Name",
+                "nome": "Full Name",
                 "email": "Email Address",
-                "phone_number": "Phone",
+                "telefone": "Phone",
             },
         )
 

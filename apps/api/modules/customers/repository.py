@@ -44,7 +44,7 @@ class CustomerRepository:
                     nome=row["nome"],
                     telefone=row["telefone"],
                     email=row["email"],
-                    pedidos=[],  # New customer has no orders
+                    pedidos=[],
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -62,9 +62,11 @@ class CustomerRepository:
             rows = cur.fetchall()
             results = []
             for row in rows:
-                orders_data = row["orders"]
+                orders_data = row["pedidos"]
                 if isinstance(orders_data, str):
                     orders_data = json.loads(orders_data)
+                if orders_data is None:
+                    orders_data = []
                 orders_list = [OrderResponse(**o) for o in orders_data]
                 results.append(
                     CustomerResponse(

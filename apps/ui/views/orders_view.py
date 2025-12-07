@@ -80,7 +80,6 @@ class OrdersView:
 
         if self.vm.add_item_to_order(order_id, dish_id, qty):
             st.toast(f"✅ Item adicionado ao pedido #{order_id}")
-            # Rerun to refresh the list with the new item
             st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
@@ -95,7 +94,6 @@ class OrdersView:
 
         if self.vm.remove_item_from_order(order_id, item_id):
             st.toast("✅ Item removido.")
-            # Rerun to refresh the list (remove the item from view)
             st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
@@ -113,28 +111,27 @@ class OrdersView:
     def _render_active_orders_tab(self):
         orders = self.vm.active_orders
         if not orders:
-            st.info("Nenhum pedido aberto encontrado. Adicione uma nova mesa para começar.")
+            st.info(
+                "Nenhum pedido aberto encontrado. Adicione uma nova mesa para começar."
+            )
             return
-
         df_orders = pd.DataFrame([o.model_dump() for o in orders])
-        print(df_orders["status"])
-        df_orders["status"].apply(lambda x: "Aberto" if x == "OPEN" else "Fechado")
-        cols = ["id", "customer_name", "table_number", "total_value", "status"]
+        df_orders["status"] = df_orders["status"].apply(
+            lambda x: "Aberto" if str(x).upper() == "ABERTO" else "Fechado"
+        )
+        cols = ["id", "nome_cliente", "numero_mesa", "valor_total", "status"]
         display_cols = [c for c in cols if c in df_orders.columns]
-
         st.dataframe(
             df_orders[display_cols],
             width="stretch",
             hide_index=True,
             column_config={
-                "total_value": st.column_config.NumberColumn(format="$%.2f"),
-                "id": st.column_config.NumberColumn("Order #", format="%d"),
+                "valor_total": st.column_config.NumberColumn(format="$%.2f"),
+                "id": st.column_config.NumberColumn("Order Nº", format="%d"),
             },
         )
-
         st.markdown("---")
         st.subheader("Gerenciar Pedidos")
-
         for order in orders:
             self._render_order_card_fragment(order)
 
@@ -147,16 +144,14 @@ class OrdersView:
         """
         if not order or str(order.status).lower() in ['ABERTO', 'FECHADO', 'CANCELADO']:
             return
-        t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
+        t_label = getattr(order, "numero_mesa", getattr(order, "id_mesa", "?"))
         label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.valor_total:,.2f}"
         with st.expander(label, expanded=False):
             self._render_order_items_table(order)
             st.divider()
-
             tab_add, tab_rem, tab_pay = st.tabs(
                 ["Adicionar Item", "Remover Item", "Pagar e Fechar"]
             )
-
             with tab_add:
                 self._render_add_item_form(order.id)
 
@@ -183,7 +178,7 @@ class OrdersView:
             return
         items_data = [
             {
-                "Preço": i.nome_prato,
+                "Nome": i.nome_prato,
                 "Quantidade": i.quantidade,
                 "Preço": f"${i.preco_unitario:.2f}",
                 "Subtotal": f"${(i.preco_unitario * i.quantidade):.2f}",
