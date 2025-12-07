@@ -3,39 +3,14 @@ from pathlib import Path
 import streamlit as st
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
-import pandas as pd
 from datetime import datetime
-
 from apps.api.modules import OrderResponse
-
-
-def render_order_details(order: OrderResponse):
-    """
-    Renders the details of an order (Items Table) using the Pydantic model.
-    """
-    items = order.items
-    if items:
-        df_items = pd.DataFrame([item.model_dump() for item in items])
-        cols = ["dish_name", "quantity", "unit_price", "subtotal"]
-        if "total_price" in df_items.columns and "subtotal" not in df_items.columns:
-            df_items["subtotal"] = df_items["total_price"]
-        display_cols = [c for c in cols if c in df_items.columns]
-        st.dataframe(
-            df_items[display_cols],
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "unit_price": st.column_config.NumberColumn(format="$%.2f"),
-                "subtotal": st.column_config.NumberColumn(format="$%.2f"),
-            },
-        )
-    else:
-        st.info("No items ordered yet.")
 
 
 def render_kitchen_ticket(order: OrderResponse):
     """
     Renders a large, high-contrast ticket for the Kitchen Display System (KDS).
+    Used in pages/8_Kitchen.py
     """
     time_label = "Just Now"
     if hasattr(order, "created_at") and order.created_at:
