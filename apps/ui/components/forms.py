@@ -1,8 +1,4 @@
-import sys
-from pathlib import Path
 import streamlit as st
-project_root = Path(__file__).resolve().parents[2]
-sys.path.append(str(project_root))
 from typing import Dict, Any, Optional, List
 
 
@@ -42,28 +38,34 @@ def render_create_dish_form(
     """
     if existing_categories is None:
         existing_categories = []
-    new_cat_option = "➕ Create New Category..."
-    options = existing_categories + [new_cat_option]
-    with st.form("create_dish_form"):
-        st.subheader("New Dish Details")
-        name = st.text_input("Dish Name")
-        c1, c2 = st.columns(2)
-        with c1:
-            price = st.number_input(
-                "Price ($)", min_value=0.01, step=0.50, format="%.2f"
-            )
-        with c2:
-            selected_cat = st.selectbox("Category", options)
-        final_category = selected_cat
-        if selected_cat == new_cat_option:
+    NEW_CAT_OPTION = "➕ Create New Category..."
+    options = existing_categories + [NEW_CAT_OPTION]
+    st.subheader("New Dish Details")
+    c_cat1, c_cat2 = st.columns(2)
+    with c_cat1:
+        selected_cat = st.selectbox("Category", options)
+    final_category = selected_cat
+    if selected_cat == NEW_CAT_OPTION:
+        with c_cat2:
             final_category = st.text_input(
                 "Enter New Category Name", placeholder="e.g. Vegan Specials"
+            )
+    with st.form("create_dish_form"):
+        name = st.text_input("Dish Name")
+        c_price, _ = st.columns(2)
+        with c_price:
+            price = st.number_input(
+                "Price ($)", min_value=0.01, step=0.50, format="%.2f"
             )
         if st.form_submit_button("Create Dish", width="stretch"):
             if not name:
                 st.error("Dish name is required.")
                 return None
-            if not final_category or final_category == new_cat_option:
+            if (
+                not final_category
+                or final_category == NEW_CAT_OPTION
+                or final_category.strip() == ""
+            ):
                 st.error("Please provide a valid category.")
                 return None
 
@@ -78,6 +80,12 @@ def render_open_order_form(
 ) -> Optional[Dict[str, Any]]:
     """
     Renders the form to open a new table/order using Dropdowns.
+    Args:
+        customer_options: Dict mapping Customer ID -> Name
+        table_options: Dict mapping Table ID -> Label (e.g. "Table 1 (4 seats)")
+        waiter_options: Dict mapping Waiter ID -> Name
+    Returns:
+        Dict payload for order creation if submitted.
     """
     with st.form("new_order_form"):
         st.write("Select details to open a new tab:")

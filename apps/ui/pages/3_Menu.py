@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 import streamlit as st
-project_root = Path(__file__).resolve().parents[2]
+project_root = Path(__file__).resolve().parents[3]
 sys.path.append(str(project_root))
 import pandas as pd
 import time
