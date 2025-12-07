@@ -20,13 +20,13 @@ class SystemService:
         self.client = APIClient()
 
     @st.cache_data(ttl=30, show_spinner=False)
-    def get_health_status(self) -> Optional[Dict[str, Any]]:
+    def get_health_status(_self) -> Optional[Dict[str, Any]]:
         """
         Queries the backend health check endpoint.
         Cached to prevent flickering on every rerun.
         """
         try:
-            return self.client.get("/health")
+            return _self.client.get("/health")
         except APIConnectionError:
             logger.warning("Backend health check failed: Connection Error")
             return None

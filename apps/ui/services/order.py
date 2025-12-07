@@ -17,19 +17,19 @@ class OrderService:
 
 
     @st.cache_data(ttl=10, show_spinner=False)
-    def list_orders(self) -> List[OrderResponse]:
+    def list_orders(_self) -> List[OrderResponse]:
         """
         Fetches all orders. Cached for 10 seconds.
         Note: '_self' is used to exclude the service instance from hashing if needed,
         though Streamlit handles Pydantic/Simple classes well.
         """
-        data = self.client.get("/orders/")
+        data = _self.client.get("/orders/")
         return [OrderResponse.model_validate(item) for item in data]
 
     @st.cache_data(ttl=10, show_spinner=False)
-    def get_order_details(self, order_id: int) -> OrderResponse:
+    def get_order_details(_self, order_id: int) -> OrderResponse:
         """Fetches a single order. Cached for 10 seconds."""
-        data = self.client.get(f"/orders/{order_id}")
+        data = _self.client.get(f"/orders/{order_id}")
         return OrderResponse.model_validate(data)
 
 

@@ -12,8 +12,8 @@ class CustomerService:
         self.client = APIClient()
 
     @st.cache_data(ttl=60, show_spinner=False)
-    def get_customers(self) -> List[CustomerResponse]:
-        data = self.client.get("/customers/")
+    def get_customers(_self) -> List[CustomerResponse]:
+        data = _self.client.get("/customers/")
         return [CustomerResponse.model_validate(c) for c in data]
 
     def create_customer(self, customer: CustomerCreate) -> CustomerResponse:

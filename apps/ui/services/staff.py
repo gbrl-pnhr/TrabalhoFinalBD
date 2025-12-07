@@ -18,8 +18,8 @@ class StaffService:
         self.client = APIClient()
 
     @st.cache_data(ttl=60, show_spinner=False)
-    def get_waiters(self) -> List[WaiterResponse]:
-        data = self.client.get("/staff/waiters")
+    def get_waiters(_self) -> List[WaiterResponse]:
+        data = _self.client.get("/staff/waiters")
         return [WaiterResponse.model_validate(item) for item in data]
 
     def create_waiter(self, waiter_data: WaiterCreate) -> WaiterResponse:

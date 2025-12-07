@@ -12,9 +12,9 @@ class TableService:
         self.client = APIClient()
 
     @st.cache_data(ttl=300, show_spinner=False)
-    def get_tables(self) -> List[TableResponse]:
+    def get_tables(_self) -> List[TableResponse]:
         """Fetch all tables. Cached for 5 minutes."""
-        data = self.client.get("/tables/")
+        data = _self.client.get("/tables/")
         return [TableResponse.model_validate(t) for t in data]
 
     def create_table(self, table: TableCreate) -> TableResponse:

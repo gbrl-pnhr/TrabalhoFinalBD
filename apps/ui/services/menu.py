@@ -17,13 +17,13 @@ class MenuService:
         self.client = APIClient()
 
     @st.cache_data(ttl=60, show_spinner=False)
-    def get_dishes(self) -> List[DishResponse]:
-        data = self.client.get("/menu/dishes")
+    def get_dishes(_self) -> List[DishResponse]:
+        data = _self.client.get("/menu/dishes")
         return [DishResponse.model_validate(item) for item in data]
 
     @st.cache_data(ttl=60, show_spinner=False)
-    def get_categories(self) -> List[str]:
-        return self.client.get("/menu/categories")
+    def get_categories(_self) -> List[str]:
+        return _self.client.get("/menu/categories")
 
     def create_dish(self, dish: DishCreate) -> DishResponse:
         response_data = self.client.post("/menu/dishes", dish.model_dump(mode='json'))
