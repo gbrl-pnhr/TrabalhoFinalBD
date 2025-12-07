@@ -8,7 +8,6 @@
   ],
   "scripts": {
     "start": "dotenv -e .env -- turbo dev",
-    "dev": "dotenv -e .env -- turbo dev",
     "dev:api": "dotenv -e .env -- turbo dev --filter=api",
     "dev:ui": "dotenv -e .env -- turbo dev --filter=ui",
     "format": "ruff format .",

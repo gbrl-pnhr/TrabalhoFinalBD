@@ -1,4 +1,5 @@
 from typing import List, Optional, Dict
+from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 from dataclasses import dataclass
 from apps.api.modules import DishResponse, DishCreate, DishUpdate
@@ -26,15 +27,24 @@ class MenuViewModel:
         self.last_error: Optional[str] = None
 
     def load_data(self) -> None:
-        """Fetches dishes and categories from the backend."""
+        """
+        Fetches dishes and categories from the backend IN PARALLEL.
+        """
         self.last_error = None
-        try:
-            self.dishes = self._service.get_dishes()
-            self.categories = self._service.get_categories()
-        except AppError as e:
-            self.last_error = str(e)
-            self.dishes = []
-            self.categories = []
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_dishes = executor.submit(self._service.get_dishes)
+            future_cats = executor.submit(self._service.get_categories)
+            try:
+                self.dishes = future_dishes.result()
+                self.categories = future_cats.result()
+            except AppError as e:
+                self.last_error = str(e)
+                self.dishes = []
+                self.categories = []
+            except Exception as e:
+                self.last_error = f"Unexpected error loading menu: {e}"
+                self.dishes = []
+                self.categories = []
 
     def get_dishes_dataframe(self) -> pd.DataFrame:
         """Transforms dish list into a Pandas DataFrame for display."""

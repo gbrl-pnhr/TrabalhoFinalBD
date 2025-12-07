@@ -23,7 +23,7 @@ class KitchenTicket:
     waiter_label: str
     time_elapsed_label: str
     items: List[KitchenTicketItem]
-    is_alert: bool  # e.g., if order > 30 mins old
+    is_alert: bool
 
 
 class KitchenViewModel:

@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from apps.api.modules import (
     OrderResponse,
@@ -66,24 +67,35 @@ class OrdersViewModel:
             return None
 
     def get_new_order_options(self) -> NewOrderOptions:
-        """Fetches auxiliary data needed to open a new table."""
-        try:
-            customers = self._customer_service.get_customers()
-            tables = self._table_service.get_tables()
-            waiters = self._staff_service.get_waiters()
-            cust_map = {c.id: c.name for c in customers}
-            waiter_map = {w.id: w.name for w in waiters}
-            table_map = {
-                t.id: f"Table {t.number} ({t.capacity} Seats) - {t.location}"
-                for t in tables
-                if not t.is_occupied
-            }
-            return NewOrderOptions(
-                customers=cust_map, tables=table_map, waiters=waiter_map
-            )
-        except AppError as e:
-            self.last_error = f"Failed to load options: {e}"
-            return NewOrderOptions({}, {}, {})
+        """
+        Fetches auxiliary data needed to open a new table.
+        Uses threading to fetch Customers, Tables, and Waiters in parallel.
+        """
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            future_cust = executor.submit(self._customer_service.get_customers)
+            future_tables = executor.submit(self._table_service.get_tables)
+            future_waiters = executor.submit(self._staff_service.get_waiters)
+
+            try:
+                customers = future_cust.result()
+                tables = future_tables.result()
+                waiters = future_waiters.result()
+                cust_map = {c.id: c.name for c in customers}
+                waiter_map = {w.id: w.name for w in waiters}
+                table_map = {
+                    t.id: f"Table {t.number} ({t.capacity} Seats) - {t.location}"
+                    for t in tables
+                    if not t.is_occupied
+                }
+                return NewOrderOptions(
+                    customers=cust_map, tables=table_map, waiters=waiter_map
+                )
+            except AppError as e:
+                self.last_error = f"Failed to load options: {e}"
+                return NewOrderOptions({}, {}, {})
+            except Exception as e:
+                self.last_error = f"Unexpected error: {e}"
+                return NewOrderOptions({}, {}, {})
 
     def check_table_capacity(self, table_id: int, guest_count: int) -> Optional[str]:
         """Pre-validation check for table capacity."""
