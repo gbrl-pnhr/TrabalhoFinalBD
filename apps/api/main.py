@@ -57,7 +57,7 @@ app.include_router(order_router, prefix="/api/v1")
 app.include_router(review_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 
-@app.get("/health")
+@app.get("/api/v1/health")
 def health_check():
     return {"status": "ok", "app": settings.PROJECT_NAME}
 
