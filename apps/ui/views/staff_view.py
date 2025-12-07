@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 from apps.ui.viewmodels.staff import StaffViewModel
 
 
@@ -46,8 +45,7 @@ class StaffView:
 
                         if st.button("🔥 Fire Waiter", key=f"del_w_{w.id}"):
                             if self.vm.fire_waiter(w.id):
-                                st.success("Terminated successfully.")
-                                time.sleep(0.5)
+                                st.toast("✅ Waiter terminated successfully.")
                                 st.rerun()
                             else:
                                 st.error(self.vm.last_error)
@@ -83,8 +81,7 @@ class StaffView:
                         shift=w_shift,
                     )
                     if success:
-                        st.success(f"✅ {w_name} hired!")
-                        time.sleep(1)
+                        st.toast(f"✅ {w_name} hired!")
                         st.rerun()
                     else:
                         st.error(self.vm.last_error)
@@ -105,8 +102,7 @@ class StaffView:
 
                         if st.button("🔥 Fire Chef", key=f"del_c_{c.id}"):
                             if self.vm.fire_chef(c.id):
-                                st.success("Terminated successfully.")
-                                time.sleep(0.5)
+                                st.toast("✅ Chef terminated successfully.")
                                 st.rerun()
                             else:
                                 st.error(self.vm.last_error)
@@ -127,12 +123,6 @@ class StaffView:
             c_salary = st.number_input("Salary ($)", min_value=0.0, step=100.0)
 
             selected_opt = st.selectbox("Specialty", options=options)
-
-            # Note: We can't conditionally render inputs inside a form easily in Streamlit
-            # without breaking the form context on rerun, but we can accept the input anyway.
-            # A cleaner UI approach is to put the selectbox outside, but for consistent
-            # form submission we'll keep it simple or use a placeholder if needed.
-            # Here we will just ask for manual input if they picked "New".
 
             c_manual_spec = st.text_input(
                 "If 'New', enter Specialty Name",
@@ -155,8 +145,7 @@ class StaffView:
                         specialty=final_specialty,
                     )
                     if success:
-                        st.success(f"✅ Chef {c_name} added!")
-                        time.sleep(1)
+                        st.toast(f"✅ Chef {c_name} added!")
                         st.rerun()
                     else:
                         st.error(self.vm.last_error)

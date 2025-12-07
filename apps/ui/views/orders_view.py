@@ -70,7 +70,6 @@ class OrdersView:
         except Exception as e:
             st.session_state["flash_msg"] = {"type": "error", "text": str(e)}
 
-
     def _handle_add_item(self, order_id: int):
         dish_key = f"add_dish_id_{order_id}"
         qty_key = f"add_qty_{order_id}"
@@ -106,7 +105,6 @@ class OrdersView:
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
-
     def _render_active_orders_tab(self):
         orders = self.vm.active_orders
         if not orders:
@@ -140,15 +138,11 @@ class OrdersView:
         Decorated with @st.fragment to enable granular re-rendering.
         When a user interacts with widgets inside this function, only this function re-runs.
         """
-
         order = self.vm.get_order_by_id(order_id)
-
         if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
             return
-
         t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
         label = f"📋 Order #{order.id} | Table {t_label} | ${order.total_value:,.2f}"
-
         with st.expander(label, expanded=False):
             self._render_order_items_table(order)
             st.divider()
@@ -174,26 +168,23 @@ class OrdersView:
                 )
 
     def _render_order_items_table(self, order):
+        """
+        Optimized rendering using native Python dictionaries and st.table.
+        Avoids Pandas overhead for small data fragments.
+        """
         if not order.items:
             st.info("No items ordered yet.")
             return
-
-        df_items = pd.DataFrame([item.model_dump() for item in order.items])
-        if "total_price" in df_items.columns:
-            df_items["subtotal"] = df_items["total_price"]
-
-        cols = ["dish_name", "quantity", "unit_price", "subtotal"]
-        display_cols = [c for c in cols if c in df_items.columns]
-
-        st.dataframe(
-            df_items[display_cols],
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "unit_price": st.column_config.NumberColumn(format="$%.2f"),
-                "subtotal": st.column_config.NumberColumn(format="$%.2f"),
-            },
-        )
+        items_data = [
+            {
+                "Dish": i.dish_name,
+                "Qty": i.quantity,
+                "Price": f"${i.unit_price:.2f}",
+                "Subtotal": f"${(i.unit_price * i.quantity):.2f}",
+            }
+            for i in order.items
+        ]
+        st.table(items_data)
 
     def _render_add_item_form(self, order_id: int):
         c1, c2, c3 = st.columns([2, 1, 1])
@@ -211,7 +202,7 @@ class OrdersView:
                 "Add",
                 key=f"btn_add_{order_id}",
                 on_click=self._handle_add_item,
-                args=(order_id,)
+                args=(order_id,),
             )
 
     def _render_remove_item_form(self, order):

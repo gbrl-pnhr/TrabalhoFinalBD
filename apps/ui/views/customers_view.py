@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 from apps.ui.viewmodels.customers import CustomersViewModel, CustomerFormData
 
 
@@ -73,8 +72,7 @@ class CustomersView:
                 form_data = CustomerFormData(name=name, email=email, phone=phone)
 
                 if self.vm.create_customer(form_data):
-                    st.success(f"✅ Customer '{name}' registered successfully!")
-                    time.sleep(1)
+                    st.toast(f"✅ Customer '{name}' registered successfully!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)

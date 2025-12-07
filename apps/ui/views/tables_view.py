@@ -1,6 +1,4 @@
 import streamlit as st
-import time
-
 from apps.ui.viewmodels.table import TableViewModel
 
 
@@ -70,8 +68,7 @@ class TablesView:
                 if self.vm.add_table(
                     number=t_num, capacity=t_cap, location=final_location
                 ):
-                    st.success(f"✅ Table {t_num} created!")
-                    time.sleep(1)
+                    st.toast(f"✅ Table {t_num} created!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)
@@ -88,8 +85,7 @@ class TablesView:
         )
         if st.button("🗑️ Delete Selected Table", type="primary"):
             if self.vm.delete_table(selected_id):
-                st.success("Table removed.")
-                time.sleep(1)
+                st.toast("✅ Table removed.")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)

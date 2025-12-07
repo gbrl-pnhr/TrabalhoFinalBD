@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 from apps.ui.viewmodels.reviews import ReviewsViewModel
 from apps.api.modules import ReviewCreate
 from apps.ui.utils.exceptions import AppError
@@ -62,8 +61,7 @@ class ReviewsView:
                     if st.form_submit_button("Save"):
                         try:
                             self.vm.update_review(rev.id, r, c)
-                            st.success("Updated!")
-                            time.sleep(0.5)
+                            st.toast("✅ Review updated!")
                             st.rerun()
                         except AppError as e:
                             st.error(str(e))
@@ -71,6 +69,7 @@ class ReviewsView:
             if st.button("Delete", key=f"del_{rev.id}"):
                 try:
                     self.vm.delete_review(rev.id)
+                    st.toast("🗑️ Review deleted.")
                     st.rerun()
                 except AppError as e:
                     st.error(str(e))
@@ -111,8 +110,7 @@ class ReviewsView:
                     try:
                         self.vm.submit_review(payload)
                         st.balloons()
-                        st.success("Posted!")
-                        time.sleep(1)
+                        st.toast("✅ Review posted!")
                         st.rerun()
                     except AppError as e:
                         st.error(f"Error: {e}")

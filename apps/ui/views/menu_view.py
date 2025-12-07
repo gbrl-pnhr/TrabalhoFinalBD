@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 from apps.ui.viewmodels.menu import MenuViewModel, DishFormData
 
 
@@ -52,10 +51,6 @@ class MenuView:
             st.rerun()
 
     def _render_create_tab(self):
-        """
-        Renders the Create Dish Form.
-        Logic moved from components/forms.py to adhere to high cohesion in View.
-        """
         NEW_CAT_OPTION = "➕ Create New Category..."
         options = self.vm.categories + [NEW_CAT_OPTION]
 
@@ -88,8 +83,7 @@ class MenuView:
                 )
 
                 if self.vm.create_dish(form_data):
-                    st.success(f"✅ Dish '{name}' created successfully!")
-                    time.sleep(1)
+                    st.toast(f"✅ Dish '{name}' created successfully!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)
@@ -129,16 +123,14 @@ class MenuView:
 
         if update_btn:
             if self.vm.update_dish(selected_id, new_name, new_price):
-                st.success("✅ Dish updated!")
-                time.sleep(1)
+                st.toast("✅ Dish updated!")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)
 
         if delete_btn:
             if self.vm.delete_dish(selected_id):
-                st.warning("🗑️ Dish deleted.")
-                time.sleep(1)
+                st.toast("🗑️ Dish deleted.")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)
