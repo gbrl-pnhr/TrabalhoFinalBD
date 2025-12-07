@@ -3,6 +3,7 @@ from pathlib import Path
 import streamlit as st
 
 from apps.ui.viewmodels.customers import CustomersViewModel
+from apps.ui.viewmodels.kitchen import KitchenViewModel
 from apps.ui.viewmodels.menu import MenuViewModel
 
 project_root = Path(__file__).resolve().parents[3]
@@ -104,3 +105,10 @@ class DIContainer:
     def get_customers_viewmodel() -> CustomersViewModel:
         """Factory for CustomersViewModel with dependencies injected."""
         return CustomersViewModel(customer_service=DIContainer._get_customer_service())
+
+    @staticmethod
+    def get_kitchen_viewmodel() -> KitchenViewModel:
+        """Factory for KitchenViewModel."""
+        return KitchenViewModel(
+            order_service=DIContainer._get_order_service()
+        )

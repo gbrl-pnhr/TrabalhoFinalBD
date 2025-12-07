@@ -1,56 +1,10 @@
-import sys
-from pathlib import Path
-import streamlit as st
-project_root = Path(__file__).resolve().parents[2]
-sys.path.append(str(project_root))
-import time
-from apps.ui.services.order import OrderService
-from apps.ui.components.cards import render_kitchen_ticket
-from apps.ui.utils.exceptions import AppError
+from apps.ui.core.ioc import DIContainer
+from apps.ui.views.kitchen_view import KitchenView
 
-st.title("🍳 Kitchen Display System (KDS)")
-order_service = OrderService()
+def main():
+    vm = DIContainer.get_kitchen_viewmodel()
+    view = KitchenView(view_model=vm)
+    view.render()
 
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-
-REFRESH_INTERVAL = 30
-
-def get_active_orders():
-    """Fetch orders that are not closed."""
-    try:
-        orders = order_service.list_orders()
-        active = [
-            o
-            for o in orders
-            if str(o.status).lower() not in ["closed", "paid", "completed"]
-            and o.items
-        ]
-        return active
-    except AppError:
-        return None
-
-placeholder = st.empty()
-refresher = st.empty()
-
-with placeholder.container():
-    orders = get_active_orders()
-    if orders is None:
-        st.error("🔌 Connection to Backend Lost")
-    elif not orders:
-        st.success("✅ All tickets cleared! Kitchen is quiet.")
-    else:
-        cols = st.columns(3)
-        for i, order in enumerate(orders):
-            col = cols[i % 3]
-            with col:
-                render_kitchen_ticket(order)
-
-with refresher:
-    st.markdown("---")
-    c1, c2 = st.columns([6, 1])
-    with c1:
-        st.caption(f"Last updated: {time.strftime('%H:%M:%S')}")
-    with c2:
-        if st.button("🔄 Refresh"):
-            st.rerun()
+if __name__ == "__main__":
+    main()
