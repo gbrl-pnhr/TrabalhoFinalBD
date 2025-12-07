@@ -16,6 +16,7 @@ from apps.ui.services.staff import StaffService
 from apps.ui.viewmodels.reviews import ReviewsViewModel
 from apps.ui.viewmodels.dashboard import DashboardViewModel
 from apps.ui.viewmodels.orders import OrdersViewModel
+from apps.ui.viewmodels.menu import MenuViewModel
 
 
 class DIContainer:
@@ -75,10 +76,16 @@ class DIContainer:
 
     @staticmethod
     def get_orders_viewmodel() -> OrdersViewModel:
-        """Factory for OrdersViewModel with all dependencies injected."""
         return OrdersViewModel(
             order_service=DIContainer._get_order_service(),
             customer_service=DIContainer._get_customer_service(),
             table_service=DIContainer._get_table_service(),
             staff_service=DIContainer._get_staff_service(),
+        )
+
+    @staticmethod
+    def get_menu_viewmodel() -> MenuViewModel:
+        """Factory for MenuViewModel with dependencies injected."""
+        return MenuViewModel(
+            menu_service=DIContainer._get_menu_service()
         )
