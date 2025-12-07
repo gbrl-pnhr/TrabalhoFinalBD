@@ -2,9 +2,9 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from apps.api.core.database import get_db_connection
-from apps.api.modules.staff.waiters.models import WaiterCreate, WaiterResponse
+from packages.common.src.models.waiters_models import WaiterCreate, WaiterResponse
 from apps.api.modules.staff.waiters.repository import WaiterRepository
-from apps.api.modules.staff.chefs.models import ChefCreate, ChefResponse
+from packages.common.src.models.chef_models import ChefCreate, ChefResponse
 from apps.api.modules.staff.chefs.repository import ChefRepository
 
 logger = logging.getLogger(__name__)

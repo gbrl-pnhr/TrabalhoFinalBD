@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from apps.api.core.database import get_db_connection
-from apps.api.modules.customers.models import CustomerCreate, CustomerResponse
+from packages.common.src.models.customers_models import CustomerCreate, CustomerResponse
 from apps.api.modules.customers.repository import CustomerRepository
 
 router = APIRouter(prefix="/customers", tags=["Customers"])

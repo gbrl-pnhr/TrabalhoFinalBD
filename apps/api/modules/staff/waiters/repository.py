@@ -1,7 +1,7 @@
 from typing import List
 from pathlib import Path
 import logging
-from apps.api.modules.staff.waiters.models import WaiterCreate, WaiterResponse
+from packages.common.src.models.waiters_models import WaiterCreate, WaiterResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

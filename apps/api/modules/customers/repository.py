@@ -2,8 +2,8 @@ from typing import List
 from pathlib import Path
 import logging
 import json
-from apps.api.modules.customers.models import CustomerCreate, CustomerResponse
-from apps.api.modules.orders.models import OrderResponse
+from packages.common.src.models.customers_models import CustomerCreate, CustomerResponse
+from packages.common.src.models.orders_models import OrderResponse
 
 logger = logging.getLogger(__name__)
 QUERY_PATH = Path(__file__).parent / "queries"

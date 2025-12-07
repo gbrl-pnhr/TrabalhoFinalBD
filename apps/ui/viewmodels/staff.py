@@ -1,10 +1,6 @@
 from typing import List, Optional, Set
-from apps.api.modules import (
-    WaiterResponse,
-    WaiterCreate,
-    ChefResponse,
-    ChefCreate
-)
+from concurrent.futures import ThreadPoolExecutor
+from apps.api.modules import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
 from apps.ui.services.staff import StaffService
 from apps.ui.utils.exceptions import AppError
 
@@ -12,8 +8,7 @@ from apps.ui.utils.exceptions import AppError
 class StaffViewModel:
     """
     Business Logic for the Staff Management Page.
-    Handles data fetching, validation, and command execution for Waiters and Chefs.
-    Zero Streamlit dependencies.
+    Handles parallel data fetching for Waiters and Chefs.
     """
 
     def __init__(self, staff_service: StaffService):
@@ -23,22 +18,38 @@ class StaffViewModel:
         self.last_error: Optional[str] = None
 
     def load_staff(self) -> None:
-        """Refreshes the local state of waiters and chefs."""
+        """
+        Refreshes the local state of waiters and chefs using Parallel Execution.
+        """
         self.last_error = None
-        try:
-            self.waiters = self._service.get_waiters()
-            self.chefs = self._service.get_chefs()
-        except AppError as e:
-            self.last_error = str(e)
-            self.waiters = []
-            self.chefs = []
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_waiters = executor.submit(self._service.get_waiters)
+            future_chefs = executor.submit(self._service.get_chefs)
+            try:
+                self.waiters = future_waiters.result()
+                self.chefs = future_chefs.result()
+            except AppError as e:
+                self.last_error = str(e)
+                self.waiters = []
+                self.chefs = []
+            except Exception as e:
+                self.last_error = f"Unexpected error: {str(e)}"
+                self.waiters = []
+                self.chefs = []
 
     def get_existing_specialties(self) -> List[str]:
         """Extracts unique specialties from existing chefs for autocomplete."""
         specialties: Set[str] = {c.specialty for c in self.chefs if c.specialty}
         return sorted(list(specialties))
 
-    def hire_waiter(self, name: str, cpf: str, salary: float, commission: float, shift: str) -> bool:
+    def get_existing_shifts(self) -> List[str]:
+        """Extracts unique shifts from existing waiters for autocomplete."""
+        shifts: Set[str] = {w.shift for w in self.waiters if w.shift}
+        return sorted(list(shifts))
+
+    def hire_waiter(
+        self, name: str, cpf: str, salary: float, commission: float, shift: str
+    ) -> bool:
         """
         Attempts to register a new waiter.
         Returns True if successful, False otherwise (check last_error).
@@ -46,11 +57,7 @@ class StaffViewModel:
         self.last_error = None
         try:
             payload = WaiterCreate(
-                name=name,
-                cpf=cpf,
-                salary=salary,
-                commission=commission,
-                shift=shift
+                name=name, cpf=cpf, salary=salary, commission=commission, shift=shift
             )
             self._service.create_waiter(payload)
             return True
@@ -78,12 +85,7 @@ class StaffViewModel:
         """
         self.last_error = None
         try:
-            payload = ChefCreate(
-                name=name,
-                cpf=cpf,
-                salary=salary,
-                specialty=specialty
-            )
+            payload = ChefCreate(name=name, cpf=cpf, salary=salary, specialty=specialty)
             self._service.create_chef(payload)
             return True
         except AppError as e:

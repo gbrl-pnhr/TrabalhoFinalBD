@@ -1,4 +1,5 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional
+from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 from dataclasses import dataclass
 from apps.ui.services.analytics import AnalyticsService
@@ -17,7 +18,7 @@ class KPIMetrics:
 class DashboardViewModel:
     """
     Business Logic for the Dashboard.
-    Zero Streamlit dependencies.
+    Optimized with Threading for parallel data fetching.
     """
 
     def __init__(self, analytics_service: AnalyticsService):
@@ -29,18 +30,22 @@ class DashboardViewModel:
 
     def load_data(self) -> None:
         """
-        Fetches all required data from the backend.
-        Updates internal state.
+        Fetches all required data from the backend IN PARALLEL.
+        This significantly reduces load time by running 3 requests simultaneously.
         """
         self._error = None
-        try:
-            self._revenue_data = self._service.get_revenue_stats()
-            self._popular_dishes = self._service.get_popular_dishes()
-            self._staff_performance = self._service.get_staff_performance()
-        except AppError as e:
-            self._error = str(e)
-        except Exception as e:
-            self._error = f"Unexpected error: {str(e)}"
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            future_rev = executor.submit(self._service.get_revenue_stats)
+            future_dish = executor.submit(self._service.get_popular_dishes)
+            future_perf = executor.submit(self._service.get_staff_performance)
+            try:
+                self._revenue_data = future_rev.result()
+                self._popular_dishes = future_dish.result()
+                self._staff_performance = future_perf.result()
+            except AppError as e:
+                self._error = str(e)
+            except Exception as e:
+                self._error = f"Unexpected error loading dashboard: {str(e)}"
 
     @property
     def has_error(self) -> bool:

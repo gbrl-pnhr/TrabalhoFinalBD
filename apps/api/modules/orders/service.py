@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from typing import List
 from fastapi import HTTPException, status
-from apps.api.modules.orders.models import OrderCreate, OrderResponse, OrderItemCreate
+from packages.common.src.models.orders_models import OrderCreate, OrderResponse, OrderItemCreate
 from apps.api.modules.orders.repositories.order_repository import OrderRepository
 from apps.api.modules.orders.repositories.item_repository import ItemRepository
 from apps.api.modules.menu.repository import MenuRepository

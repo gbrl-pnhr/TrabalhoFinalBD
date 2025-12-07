@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from apps.api.core.database import get_db_connection
-from apps.api.modules.tables.models import TableCreate, TableResponse
+from packages.common.src.models.tables_models import TableCreate, TableResponse
 from apps.api.modules.tables.repository import TableRepository
 
 router = APIRouter(prefix="/tables", tags=["Tables"])

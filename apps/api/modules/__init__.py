@@ -3,40 +3,40 @@ Central export module for all Pydantic models used in the application.
 Allows for streamlined imports in the Frontend.
 """
 
-from apps.api.modules.analytics.models import (
+from packages.common.src.models.analytics_models import (
     DailyRevenue,
     DishPopularity,
     WaiterPerformance,
 )
-from apps.api.modules.customers.models import (
+from packages.common.src.models.customers_models import (
     CustomerCreate,
     CustomerResponse,
 )
-from apps.api.modules.menu.models import (
+from packages.common.src.models.menu_models import (
     DishCreate,
     DishResponse,
     DishUpdate,
 )
-from apps.api.modules.orders.models import (
+from packages.common.src.models.orders_models import (
     OrderCreate,
     OrderResponse,
     OrderItemCreate,
     OrderItemResponse,
 )
-from apps.api.modules.reviews.models import (
+from packages.common.src.models.reviews_models import (
     ReviewCreate,
     ReviewResponse,
     ReviewUpdate,
 )
-from apps.api.modules.staff.chefs.models import (
+from packages.common.src.models.chef_models import (
     ChefCreate,
     ChefResponse,
 )
-from apps.api.modules.staff.waiters.models import (
+from packages.common.src.models.waiters_models import (
     WaiterCreate,
     WaiterResponse,
 )
-from apps.api.modules.tables.models import (
+from packages.common.src.models.tables_models import (
     TableCreate,
     TableResponse,
 )

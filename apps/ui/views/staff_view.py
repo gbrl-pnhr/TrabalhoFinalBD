@@ -55,10 +55,22 @@ class StaffView:
 
     def _render_waiter_form(self):
         st.subheader("Register Waiter")
+        existing_shifts = self.vm.get_existing_shifts()
+        NEW_SHIFT_OPT = "➕ Create New Shift..."
+        if not existing_shifts:
+            existing_shifts = ["Morning", "Evening", "Full Day"]
+        options = existing_shifts + [NEW_SHIFT_OPT]
+        selected_shift = st.selectbox("Shift", options=options, key="sel_shift")
+        final_shift = selected_shift
+        if selected_shift == NEW_SHIFT_OPT:
+            final_shift = st.text_input(
+                "Enter New Shift Name",
+                placeholder="e.g. Night Owl",
+                key="txt_new_shift",
+            )
         with st.form("create_waiter_form"):
             w_name = st.text_input("Full Name")
             w_cpf = st.text_input("CPF (Digits Only)")
-
             c1, c2 = st.columns(2)
             with c1:
                 w_salary = st.number_input("Salary ($)", min_value=0.0, step=100.0)
@@ -66,19 +78,16 @@ class StaffView:
                 w_commission = st.number_input(
                     "Commission (%)", min_value=0.0, step=0.1
                 )
-
-            w_shift = st.selectbox("Shift", ["Morning", "Evening", "Full Day"])
-
             if st.form_submit_button("Hire Waiter", width="stretch"):
-                if not w_name or not w_cpf:
-                    st.error("Name and CPF are required.")
+                if not w_name or not w_cpf or not final_shift:
+                    st.error("Name, CPF and Shift are required.")
                 else:
                     success = self.vm.hire_waiter(
                         name=w_name,
                         cpf=w_cpf,
                         salary=w_salary,
                         commission=w_commission,
-                        shift=w_shift,
+                        shift=final_shift,
                     )
                     if success:
                         st.toast(f"✅ {w_name} hired!")
@@ -99,7 +108,6 @@ class StaffView:
                         st.write(f"**CPF:** {c.cpf}")
                         st.write(f"**Salary:** ${c.salary:,.2f}")
                         st.write(f"**Specialty:** {c.specialty}")
-
                         if st.button("🔥 Fire Chef", key=f"del_c_{c.id}"):
                             if self.vm.fire_chef(c.id):
                                 st.toast("✅ Chef terminated successfully.")
@@ -113,28 +121,23 @@ class StaffView:
     def _render_chef_form(self):
         st.subheader("Register Chef")
         existing_specialties = self.vm.get_existing_specialties()
-
-        NEW_OPT = "➕ New Specialty..."
-        options = existing_specialties + [NEW_OPT]
-
+        NEW_SPEC_OPT = "➕ Create New Specialty..."
+        options = existing_specialties + [NEW_SPEC_OPT]
+        selected_opt = st.selectbox("Specialty", options=options, key="sel_spec")
+        final_specialty = selected_opt
+        if selected_opt == NEW_SPEC_OPT:
+            final_specialty = st.text_input(
+                "Enter New Specialty Name",
+                placeholder="e.g. Pastry",
+                help="Enter the new specialty here.",
+                key="txt_new_spec",
+            )
         with st.form("create_chef_form"):
             c_name = st.text_input("Full Name")
             c_cpf = st.text_input("CPF")
             c_salary = st.number_input("Salary ($)", min_value=0.0, step=100.0)
 
-            selected_opt = st.selectbox("Specialty", options=options)
-
-            c_manual_spec = st.text_input(
-                "If 'New', enter Specialty Name",
-                placeholder="e.g. Pastry",
-                help="Fill this only if you selected 'New Specialty' above.",
-            )
-
             if st.form_submit_button("Hire Chef", type="primary", width="stretch"):
-                final_specialty = selected_opt
-                if selected_opt == NEW_OPT:
-                    final_specialty = c_manual_spec
-
                 if not c_name or not c_cpf or not final_specialty:
                     st.error("Please fill in all fields (Name, CPF, Specialty).")
                 else:

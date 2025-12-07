@@ -2,7 +2,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from apps.api.core.database import get_db_connection
-from apps.api.modules.reviews.models import ReviewCreate, ReviewResponse, ReviewUpdate
+from packages.common.src.models.reviews_models import ReviewCreate, ReviewResponse, ReviewUpdate
 from apps.api.modules.reviews.repository import ReviewRepository
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
