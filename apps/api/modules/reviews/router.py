@@ -98,3 +98,21 @@ def list_reviews_for_dish(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
         )
+
+@router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_review(review_id: int, repo: ReviewRepository = Depends(get_repository)):
+    """Delete a specific review."""
+    try:
+        success = repo.delete_review(review_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Review not found."
+            )
+        return None
+    except Exception as e:
+        logger.error(f"Error deleting review: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )

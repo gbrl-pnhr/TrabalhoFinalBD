@@ -14,6 +14,19 @@ def get_repository(conn=Depends(get_db_connection)):
     return TableRepository(conn)
 
 
+@router.delete("/{table_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_table(table_id: int, repo: TableRepository = Depends(get_repository)):
+    try:
+        success = repo.delete_table(table_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Table not found")
+    except Exception as e:
+        logger.error(f"Error deleting table: {e}")
+        if "foreign key constraint" in str(e).lower():
+             raise HTTPException(status_code=409, detail="Cannot delete table with existing orders.")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 @router.get("/", response_model=List[TableResponse])
 def list_tables(repo: TableRepository = Depends(get_repository)):
     """

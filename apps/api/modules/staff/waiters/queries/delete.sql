@@ -1,0 +1,1 @@
+DELETE FROM garcom WHERE id_funcionario = %(id)s;

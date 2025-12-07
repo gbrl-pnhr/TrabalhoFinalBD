@@ -82,5 +82,31 @@ def update_dish(
         logger.error(f"Error updating dish: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal Server Error"
+            detail="Internal Server Error",
+        )
+
+@router.delete("/dishes/{dish_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_dish(dish_id: int, repo: MenuRepository = Depends(get_repository)):
+    """
+    Remove a dish from the menu.
+    """
+    try:
+        success = repo.delete_dish(dish_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Dish not found."
+            )
+        return None
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error deleting dish: {e}")
+        if "foreign key constraint" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Cannot delete dish because it is part of existing orders.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error",
         )

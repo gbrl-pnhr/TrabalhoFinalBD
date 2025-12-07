@@ -1,0 +1,1 @@
+DELETE FROM prato WHERE id_prato = %(id)s;

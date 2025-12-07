@@ -12,6 +12,16 @@ class ChefRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
+
+    def delete_chef(self, waiter_id: int) -> bool:
+        sql_file = QUERY_PATH / "delete.sql"
+        query = sql_file.read_text()
+        with self.conn.cursor() as cur:
+            cur.execute(query, {"id": waiter_id})
+            deleted = cur.rowcount
+            self.conn.commit()
+            return deleted > 0
+
     def create_chef(self, chef: ChefCreate) -> ChefResponse:
         """Register a new chef."""
         sql_file = QUERY_PATH / "create.sql"

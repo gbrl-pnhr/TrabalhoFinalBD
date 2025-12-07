@@ -31,6 +31,29 @@ def list_waiters(repo: WaiterRepository = Depends(get_waiter_repo)):
             detail="Internal Server Error"
         )
 
+
+@router.delete("/waiters/{waiter_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_waiter(waiter_id: int, repo: WaiterRepository = Depends(get_waiter_repo)):
+    """Fire/Remove a waiter."""
+    try:
+        success = repo.delete_waiter(waiter_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Waiter not found.")
+    except Exception as e:
+        logger.error(f"Error deleting waiter: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.delete("/chefs/{chef_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_chef(chef_id: int, repo: ChefRepository = Depends(get_chef_repo)):
+    """Fire/Remove a chef."""
+    try:
+        success = repo.delete_chef(chef_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Chef not found.")
+    except Exception as e:
+        logger.error(f"Error deleting chef: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @router.post("/waiters", response_model=WaiterResponse, status_code=status.HTTP_201_CREATED)
 def create_waiter(waiter: WaiterCreate, repo: WaiterRepository = Depends(get_waiter_repo)):
     """Register a new waiter."""

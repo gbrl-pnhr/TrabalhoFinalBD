@@ -46,9 +46,9 @@ class CustomersView:
             hide_index=True,
             column_config={
                 "id": st.column_config.NumberColumn("ID", format="%d"),
-                "nome": "Full Name",
-                "email": "Email Address",
-                "telefone": "Phone",
+                "nome": "Nome Completo",
+                "email": "Endereco de Email",
+                "telefone": "Telefone",
             },
         )
 
@@ -61,12 +61,12 @@ class CustomersView:
         with st.form("create_customer_form"):
             col1, col2 = st.columns(2)
             with col1:
-                name = st.text_input("Full Name")
-                email = st.text_input("Email Address")
+                name = st.text_input("Nome Completo")
+                email = st.text_input("Endereco de Email")
             with col2:
-                phone = st.text_input("Phone Number (Optional)")
+                phone = st.text_input("Telefone (Opcional)")
 
-            submitted = st.form_submit_button("Register Customer", width="stretch")
+            submitted = st.form_submit_button("Cadastrar Cliente", width="stretch")
 
             if submitted:
                 form_data = CustomerFormData(name=name, email=email, phone=phone)
