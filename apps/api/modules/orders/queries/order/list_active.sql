@@ -14,12 +14,12 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'id', ip.id_item_pedido,
-                'dish_id', pr.id_prato,
-                'quantity', ip.quantidade,
-                'notes', ip.observacao,
-                'dish_name', pr.nome,
-                'unit_price', pr.preco,
-                'total_price', (ip.quantidade * pr.preco)
+                'id_prato', pr.id_prato,
+                'quantidade', ip.quantidade,
+                'observacoes', ip.observacao,
+                'nome_prato', pr.nome,
+                'preco_unitario', pr.preco,
+                'preco_total', (ip.quantidade * pr.preco)
             )
         ) FILTER (WHERE ip.id_item_pedido IS NOT NULL),
         '[]'
@@ -30,7 +30,7 @@ FROM pedido p
     JOIN garcom g ON p.id_funcionario = g.id_funcionario
     LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
     LEFT JOIN prato pr ON ip.id_prato = pr.id_prato
-WHERE p.status = 'OPEN'
+WHERE p.status = 'ABERTO'
 GROUP BY
     p.id_pedido,
     p.id_cliente,

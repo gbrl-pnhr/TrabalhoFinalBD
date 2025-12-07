@@ -78,7 +78,7 @@ class TablesView:
         if not self.vm.tables:
             st.caption("Nenhuma mesa para remover.")
             return
-        table_map = {t.id: f"Mesa {t.number} ({t.location})" for t in self.vm.tables}
+        table_map = {t.id: f"Mesa {t.numero} ({t.localizacao})" for t in self.vm.tables}
 
         selected_id = st.selectbox(
             "Selecionar Mesa", options=table_map.keys(), format_func=lambda x: table_map[x]

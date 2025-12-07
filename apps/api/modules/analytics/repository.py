@@ -35,9 +35,9 @@ class AnalyticsRepository:
             rows = cur.fetchall()
             return [
                 DailyRevenue(
-                    date=row["data"],
-                    order_count=row["total_pedidos"],
-                    total_revenue=row["receita_total"] or 0,
+                    data=row["data"],
+                    quantidade_ordem=row["total_pedidos"],
+                    receita_total=row["receita_total"] or 0,
                 )
                 for row in rows
             ]
@@ -57,10 +57,10 @@ class AnalyticsRepository:
             rows = cur.fetchall()
             return [
                 DishPopularity(
-                    dish_name=row["nome_prato"],
-                    category=row["categoria"],
-                    total_sold=row["total_vendido"],
-                    estimated_revenue=row["receita_estimada"] or 0,
+                    nome_prato=row["nome_prato"],
+                    categoria=row["categoria"],
+                    quantidade_vendida=row["total_vendido"],
+                    receita_estimada=row["receita_estimada"] or 0,
                 )
                 for row in rows
             ]
@@ -80,9 +80,9 @@ class AnalyticsRepository:
             rows = cur.fetchall()
             return [
                 WaiterPerformance(
-                    waiter_name=row["nome_garcom"],
-                    orders_handled=row["total_pedidos"],
-                    total_sales=row["total_vendas"],
+                    nome_garcom=row["nome_garcom"],
+                    pedidos_atentidos=row["total_pedidos"],
+                    vendas_totais=row["total_vendas"],
                 )
                 for row in rows
             ]

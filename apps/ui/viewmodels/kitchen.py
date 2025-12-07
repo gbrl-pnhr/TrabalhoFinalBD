@@ -48,8 +48,8 @@ class KitchenViewModel:
             # Filter: Open orders that have items
             active_orders = [
                 o for o in orders
-                if str(o.status).lower() not in ["closed", "paid", "completed"]
-                and o.items
+                if str(o.status).lower() not in ['ABERTO', 'FECHADO', 'CANCELADO']
+                and o.itens
             ]
             self.tickets = [self._to_ticket(o) for o in active_orders]
             self.last_updated = datetime.now().strftime("%H:%M:%S")
@@ -59,16 +59,14 @@ class KitchenViewModel:
 
     def _to_ticket(self, order) -> KitchenTicket:
         """Transforms a raw Order model into a KitchenTicket DTO."""
-        # 1. Calculate Time Label
         time_label = "Agora há pouco"
         is_alert = False
-        if hasattr(order, "created_at") and order.created_at:
+        if hasattr(order, "criado_em") and order.criado_em:
             try:
-                if isinstance(order.created_at, datetime):
-                    created_dt = order.created_at
+                if isinstance(order.criado_em, datetime):
+                    created_dt = order.criado_em
                 else:
-                    created_dt = datetime.fromisoformat(str(order.created_at))
-
+                    created_dt = datetime.fromisoformat(str(order.criado_em))
                 delta = datetime.now() - created_dt
                 minutes = int(delta.total_seconds() / 60)
                 time_label = f"{minutes} minutos atrás"
@@ -76,20 +74,15 @@ class KitchenViewModel:
                     is_alert = True
             except Exception:
                 pass
-
-        # 2. Format Table & Waiter
-        # Fallback logic handles cases where table/waiter might be objects or flat IDs depending on API version
-        table_disp = getattr(order, "table_number", getattr(order, "table_id", "?"))
-        waiter_disp = getattr(order, "waiter_name", getattr(order, "waiter_id", "?"))
-
-        # 3. Map Items
+        table_disp = getattr(order, "numero_mesa", getattr(order, "id_mesa", "?"))
+        waiter_disp = getattr(order, "nome_garcom", getattr(order, "id_garcom", "?"))
         items = [
             KitchenTicketItem(
-                quantity=i.quantity,
-                dish_name=i.dish_name,
-                notes=i.notes
+                quantity=i.quantidade,
+                dish_name=i.nome_prato,
+                notes=i.observacoes
             )
-            for i in order.items
+            for i in order.itens
         ]
 
         return KitchenTicket(

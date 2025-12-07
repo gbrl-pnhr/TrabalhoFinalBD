@@ -46,7 +46,7 @@ def create_table(
         if "23505" in str(e) or "unique constraint" in str(e).lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Table number {table.number} already exists.",
+                detail=f"Table number {table.numero} already exists.",
             )
         logger.error(f"Error creating table: {e}")
         raise HTTPException(

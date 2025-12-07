@@ -7,27 +7,27 @@ SELECT
         jsonb_agg(
             jsonb_build_object(
                 'id', p.id_pedido,
-                'customer_id', c.id_cliente,
-                'created_at', p.data_pedido,
-                'total_value', p.valor_total,
+                'id_cliente', c.id_cliente,
+                'criado_em', p.data_pedido,
+                'valor_total', p.valor_total,
                 'status', p.status,
-                'customer_count', p.quantidade_pessoas,
-                'customer_name', c.nome,
-                'table_id', p.id_mesa,
-                'waiter_id', p.id_funcionario,
-                'table_number', m.numero,
-                'waiter_name', g.nome,
-                'items', COALESCE(
+                'quantidade_cliente', p.quantidade_pessoas,
+                'nome_cliente', c.nome,
+                'id_mesa', p.id_mesa,
+                'id_garcom', p.id_funcionario,
+                'numero_mesa', m.numero,
+                'nome_garcom', g.nome,
+                'itens', COALESCE(
                     (
                         SELECT jsonb_agg(
                             jsonb_build_object(
                                 'id', ip.id_item_pedido,
-                                'dish_id', pr.id_prato,
-                                'quantity', ip.quantidade,
-                                'notes', ip.observacao,
-                                'dish_name', pr.nome,
-                                'unit_price', pr.preco,
-                                'total_price', (ip.quantidade * pr.preco)
+                                'id_prato', pr.id_prato,
+                                'quantidade', ip.quantidade,
+                                'observacoes', ip.observacao,
+                                'nome_prato', pr.nome,
+                                'preco_unitario', pr.preco,
+                                'preco_total', (ip.quantidade * pr.preco)
                             )
                         )
                         FROM item_pedido ip
@@ -39,7 +39,7 @@ SELECT
             ) ORDER BY p.data_pedido DESC
         ) FILTER (WHERE p.id_pedido IS NOT NULL),
         '[]'
-    ) as orders
+    ) as pedidos
 FROM cliente c
 LEFT JOIN pedido p ON c.id_cliente = p.id_cliente
 LEFT JOIN mesa m ON p.id_mesa = m.id_mesa

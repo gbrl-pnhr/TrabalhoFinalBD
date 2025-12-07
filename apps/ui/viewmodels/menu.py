@@ -55,7 +55,7 @@ class MenuViewModel:
 
     def get_dish_lookup(self) -> Dict[int, str]:
         """Returns a dictionary for selectboxes: {id: "Name ($Price)"}."""
-        return {d.id: f"{d.name} (${d.price:.2f})" for d in self.dishes}
+        return {d.id: f"{d.nome} (${d.preco:.2f})" for d in self.dishes}
 
     def get_dish_by_id(self, dish_id: int) -> Optional[DishResponse]:
         """Finds a dish object by ID from the local cache."""
@@ -78,7 +78,7 @@ class MenuViewModel:
 
         try:
             payload = DishCreate(
-                name=data.name, price=data.price, category=data.category
+                nome=data.name, preco=data.price, categoria=data.category
             )
             self._service.create_dish(payload)
             return True
@@ -93,7 +93,7 @@ class MenuViewModel:
         """Attempts to update an existing dish."""
         self.last_error = None
         try:
-            payload = DishUpdate(name=name, price=price)
+            payload = DishUpdate(nome=name, preco=price)
             self._service.update_dish(dish_id, payload)
             return True
         except AppError as e:

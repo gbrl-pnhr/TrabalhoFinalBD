@@ -37,13 +37,13 @@ class ReviewRepository:
         sql_details = (QUERY_PATH / "get_details.sql").read_text()
         with self.conn.cursor() as cur:
             logger.info(
-                f"Attempting to create review for Dish {review.dish_id} by Customer {review.customer_id}"
+                f"Attempting to create review for Dish {review.id_prato} by Customer {review.id_cliente}"
             )
             if not self._check_eligibility(
-                cur, review.customer_id, review.order_id, review.dish_id
+                cur, review.id_cliente, review.id_pedido, review.id_prato
             ):
                 logger.warning(
-                    f"Review rejected: Customer {review.customer_id} did not order Dish {review.dish_id} in Order {review.order_id}"
+                    f"Review rejected: Customer {review.id_cliente} did not order Dish {review.id_prato} in Order {review.id_pedido}"
                 )
                 raise ValueError(
                     "Eligibility Error: Customer did not order this dish in the specified order."
@@ -52,11 +52,11 @@ class ReviewRepository:
                 cur.execute(
                     sql_create,
                     {
-                        "rating": review.rating,
-                        "comment": review.comment,
-                        "customer_id": review.customer_id,
-                        "dish_id": review.dish_id,
-                        "order_id": review.order_id,
+                        "rating": review.nota,
+                        "comment": review.comentario,
+                        "customer_id": review.id_cliente,
+                        "dish_id": review.id_prato,
+                        "order_id": review.id_pedido,
                     },
                 )
                 row_id = cur.fetchone()
@@ -70,11 +70,11 @@ class ReviewRepository:
                     raise Exception("Failed to fetch created review details.")
                 return ReviewResponse(
                     id=row["id_avaliacao"],
-                    rating=row["nota"],
-                    comment=row["comentario"],
-                    created_at=row["data_avaliacao"],
-                    customer_name=row["nome_cliente"],
-                    dish_name=row["nome_prato"],
+                    nota=row["nota"],
+                    comentario=row["comentario"],
+                    criado_em=row["data_avaliacao"],
+                    nome_cliente=row["nome_cliente"],
+                    nome_prato=row["nome_prato"],
                 )
 
             except Exception as e:
@@ -97,11 +97,11 @@ class ReviewRepository:
             return [
                 ReviewResponse(
                     id=row["id_avaliacao"],
-                    rating=row["nota"],
-                    comment=row["comentario"],
-                    created_at=row["data_avaliacao"],
-                    customer_name=row["nome_cliente"],
-                    dish_name=row["nome_prato"],
+                    nota=row["nota"],
+                    comentario=row["comentario"],
+                    criado_em=row["data_avaliacao"],
+                    nome_cliente=row["nome_cliente"],
+                    nome_prato=row["nome_prato"],
                 )
                 for row in rows
             ]
@@ -127,8 +127,8 @@ class ReviewRepository:
                 cur.execute(
                     sql_update,
                     {
-                        "rating": review_update.rating,
-                        "comment": review_update.comment,
+                        "rating": review_update.nota,
+                        "comment": review_update.comentario,
                         "review_id": review_id,
                     },
                 )
@@ -143,11 +143,11 @@ class ReviewRepository:
                     return None
                 return ReviewResponse(
                     id=row["id_avaliacao"],
-                    rating=row["nota"],
-                    comment=row["comentario"],
-                    created_at=row["data_avaliacao"],
-                    customer_name=row["nome_cliente"],
-                    dish_name=row["nome_prato"],
+                    nota=row["nota"],
+                    comentario=row["comentario"],
+                    criado_em=row["data_avaliacao"],
+                    nome_cliente=row["nome_cliente"],
+                    nome_prato=row["nome_prato"],
                 )
 
             except Exception as e:

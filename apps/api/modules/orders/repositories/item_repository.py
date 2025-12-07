@@ -23,9 +23,9 @@ class ItemRepository:
                 query,
                 {
                     "order_id": order_id,
-                    "dish_id": item.dish_id,
-                    "quantity": item.quantity,
-                    "notes": item.notes,
+                    "dish_id": item.id_prato,
+                    "quantity": item.quantidade,
+                    "notes": item.observacoes,
                 },
             )
             self.conn.commit()
@@ -55,12 +55,12 @@ class ItemRepository:
                 items.append(
                     OrderItemResponse(
                         id=row["id_item_pedido"],
-                        dish_id=row["id_prato"],
-                        quantity=qty,
-                        notes=row["observacao"],
-                        dish_name=row["nome_prato"],
-                        unit_price=price,
-                        total_price=price * qty,
+                        id_prato=row["id_prato"],
+                        quantidade=qty,
+                        observacoes=row["observacao"],
+                        nome_prato=row["nome_prato"],
+                        preco_unitario=price,
+                        preco_total=price * qty,
                     )
                 )
             return items

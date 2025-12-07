@@ -1,27 +1,29 @@
 CREATE TABLE IF NOT EXISTS cliente (
-    id_cliente SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    id_cliente INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome TEXT NOT NULL,
     telefone VARCHAR(20),
-    email VARCHAR(100) UNIQUE NOT NULL
+    email TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS mesa (
-    id_mesa SERIAL PRIMARY KEY,
+    id_mesa INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     numero INT NOT NULL UNIQUE,
     capacidade INT NOT NULL,
-    localizacao VARCHAR(50) NOT NULL
+    localizacao TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS prato (
-    id_prato SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    id_prato INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome TEXT NOT NULL,
     preco DECIMAL(10, 2) NOT NULL,
-    categoria VARCHAR(50) NOT NULL
+    categoria TEXT NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_prato_categoria ON prato(categoria);
+
 CREATE TABLE IF NOT EXISTS garcom (
-    id_funcionario SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    id_funcionario INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome TEXT NOT NULL,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     salario DECIMAL(10, 2) NOT NULL,
     turno VARCHAR(20),
@@ -29,18 +31,18 @@ CREATE TABLE IF NOT EXISTS garcom (
 );
 
 CREATE TABLE IF NOT EXISTS cozinheiro (
-    id_funcionario SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    id_funcionario INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome TEXT NOT NULL,
     cpf VARCHAR(14) UNIQUE NOT NULL,
     salario DECIMAL(10, 2) NOT NULL,
-    especialidade VARCHAR(50)
+    especialidade TEXT
 );
 
 CREATE TABLE IF NOT EXISTS pedido (
-    id_pedido SERIAL PRIMARY KEY,
+    id_pedido INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10, 2) DEFAULT 0.00,
-    status VARCHAR(20) DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED', 'CANCELLED')),
+    status VARCHAR(20) DEFAULT 'ABERTO' CHECK (status IN ('ABERTO', 'FECHADO', 'CANCELADO')),
     quantidade_pessoas INT DEFAULT 1 CHECK (quantidade_pessoas > 0),
     id_cliente INT NOT NULL,
     id_mesa INT NOT NULL,
@@ -50,8 +52,14 @@ CREATE TABLE IF NOT EXISTS pedido (
     FOREIGN KEY (id_funcionario) REFERENCES garcom(id_funcionario)
 );
 
+CREATE INDEX IF NOT EXISTS idx_pedido_cliente ON pedido(id_cliente);
+CREATE INDEX IF NOT EXISTS idx_pedido_mesa ON pedido(id_mesa);
+CREATE INDEX IF NOT EXISTS idx_pedido_funcionario ON pedido(id_funcionario);
+CREATE INDEX IF NOT EXISTS idx_pedido_status ON pedido(status);
+CREATE INDEX IF NOT EXISTS idx_pedido_data ON pedido(data_pedido);
+
 CREATE TABLE IF NOT EXISTS item_pedido (
-    id_item_pedido SERIAL PRIMARY KEY,
+    id_item_pedido INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_pedido INT NOT NULL,
     id_prato INT NOT NULL,
     quantidade INT NOT NULL CHECK (quantidade > 0),
@@ -60,8 +68,11 @@ CREATE TABLE IF NOT EXISTS item_pedido (
     FOREIGN KEY (id_prato) REFERENCES prato(id_prato)
 );
 
+CREATE INDEX IF NOT EXISTS idx_item_pedido_pedido ON item_pedido(id_pedido);
+CREATE INDEX IF NOT EXISTS idx_item_pedido_prato ON item_pedido(id_prato);
+
 CREATE TABLE IF NOT EXISTS avaliacao (
-    id_avaliacao SERIAL PRIMARY KEY,
+    id_avaliacao INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
     comentario TEXT,
     data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -73,3 +84,6 @@ CREATE TABLE IF NOT EXISTS avaliacao (
     FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido),
     UNIQUE (id_cliente, id_pedido, id_prato)
 );
+
+CREATE INDEX IF NOT EXISTS idx_avaliacao_prato ON avaliacao(id_prato);
+CREATE INDEX IF NOT EXISTS idx_avaliacao_cliente ON avaliacao(id_cliente);

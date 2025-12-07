@@ -107,14 +107,14 @@ class MenuView:
             return
 
         with st.form(key="edit_dish_form"):
-            st.write(f"Prato Selecionado: **{selected_dish.name}**")
+            st.write(f"Prato Selecionado: **{selected_dish.nome}**")
             col1, col2 = st.columns(2)
             with col1:
                 new_price = st.number_input(
-                    "Novo Preço ($)", value=float(selected_dish.price), step=0.5
+                    "Novo Preço (R$)", value=float(selected_dish.preco), step=0.5
                 )
             with col2:
-                new_name = st.text_input("Novo Nome", value=selected_dish.name)
+                new_name = st.text_input("Novo Nome", value=selected_dish.nome)
 
             update_btn = st.form_submit_button("💾 Atualizar Informações do Prato")
 

@@ -80,7 +80,6 @@ class OrdersView:
 
         if self.vm.add_item_to_order(order_id, dish_id, qty):
             st.toast(f"✅ Item adicionado ao pedido #{order_id}")
-            # Rerun to refresh the list with the new item
             st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
@@ -95,7 +94,6 @@ class OrdersView:
 
         if self.vm.remove_item_from_order(order_id, item_id):
             st.toast("✅ Item removido.")
-            # Rerun to refresh the list (remove the item from view)
             st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
@@ -113,26 +111,24 @@ class OrdersView:
     def _render_active_orders_tab(self):
         orders = self.vm.active_orders
         if not orders:
-            st.info("Nenhum pedido aberto encontrado. Adicione uma nova mesa para começar.")
+            st.info(
+                "Nenhum pedido aberto encontrado. Adicione uma nova mesa para começar."
+            )
             return
-
         df_orders = pd.DataFrame([o.model_dump() for o in orders])
-        cols = ["id", "customer_name", "table_number", "total_value", "status"]
+        cols = ["id", "nome_cliente", "numero_mesa", "valor_total", "status"]
         display_cols = [c for c in cols if c in df_orders.columns]
-
         st.dataframe(
             df_orders[display_cols],
             width="stretch",
             hide_index=True,
             column_config={
-                "total_value": st.column_config.NumberColumn(format="$%.2f"),
-                "id": st.column_config.NumberColumn("Order #", format="%d"),
+                "valor_total": st.column_config.NumberColumn(format="$%.2f"),
+                "id": st.column_config.NumberColumn("Order Nº", format="%d"),
             },
         )
-
         st.markdown("---")
         st.subheader("Gerenciar Pedidos")
-
         for order in orders:
             self._render_order_card_fragment(order)
 
@@ -143,18 +139,16 @@ class OrdersView:
         Decorated with @st.fragment to enable granular re-rendering.
         Crucial Optimization: Accepts the full 'order' object to avoid N+1 API calls.
         """
-        if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
+        if not order or str(order.status).lower() in ['ABERTO', 'FECHADO', 'CANCELADO']:
             return
-        t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
-        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.total_value:,.2f}"
+        t_label = getattr(order, "numero_mesa", getattr(order, "id_mesa", "?"))
+        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.valor_total:,.2f}"
         with st.expander(label, expanded=False):
             self._render_order_items_table(order)
             st.divider()
-
             tab_add, tab_rem, tab_pay = st.tabs(
                 ["Adicionar Item", "Remover Item", "Pagar e Fechar"]
             )
-
             with tab_add:
                 self._render_add_item_form(order.id)
 
@@ -176,17 +170,17 @@ class OrdersView:
         Optimized rendering using native Python dictionaries and st.table.
         Avoids Pandas overhead for small data fragments.
         """
-        if not order.items:
+        if not order.itens:
             st.info("Nenhum item pedido ainda.")
             return
         items_data = [
             {
-                "Preço": i.dish_name,
-                "Quantidade": i.quantity,
-                "Preço": f"${i.unit_price:.2f}",
-                "Subtotal": f"${(i.unit_price * i.quantity):.2f}",
+                "Nome": i.nome_prato,
+                "Quantidade": i.quantidade,
+                "Preço": f"${i.preco_unitario:.2f}",
+                "Subtotal": f"${(i.preco_unitario * i.quantidade):.2f}",
             }
-            for i in order.items
+            for i in order.itens
         ]
         st.table(items_data)
 
@@ -210,12 +204,12 @@ class OrdersView:
             )
 
     def _render_remove_item_form(self, order):
-        if not order.items:
+        if not order.itens:
             st.info("Nenhum item para remover.")
             return
 
         items_map = {
-            item.id: f"{item.dish_name} (x{item.quantity})" for item in order.items
+            item.id: f"{item.nome_prato} (x{item.quantidade})" for item in order.itens
         }
 
         c1, c2 = st.columns([3, 1])

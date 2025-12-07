@@ -14,18 +14,11 @@ class KitchenView:
 
     def render(self):
         st.title("🍳 Sistema de Cozinha")
-
-        # Layout for auto-refresh controls
         top_col, _ = st.columns([6, 1])
         with top_col:
             st.caption("Feed Automático • Recarrega a cada 30s")
-
-        # Container for the dynamic content
         content_placeholder = st.empty()
-
-        # Run logic once per render cycle
         self.vm.load_orders()
-
         with content_placeholder.container():
             if self.vm.last_error:
                 st.error(f"🔌 Conexão Perdida: {self.vm.last_error}")
@@ -33,8 +26,6 @@ class KitchenView:
                 self._render_empty_state()
             else:
                 self._render_ticket_grid()
-
-        # Footer / Manual Refresh
         st.markdown("---")
         c1, c2 = st.columns([6, 1])
         with c1:
@@ -48,7 +39,6 @@ class KitchenView:
         st.success("✅ Todos os pedidos entregues! A cozinha está calma.")
 
     def _render_ticket_grid(self):
-        # Streamlit columns are not a perfect grid, so we chunk the tickets
         COLUMNS_PER_ROW = 3
         tickets = self.vm.tickets
 

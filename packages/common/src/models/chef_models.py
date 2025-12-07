@@ -7,12 +7,12 @@ from validate_docbr import CPF
 class ChefBase(BaseModel):
     """Base fields for a Chef."""
 
-    name: str = Field(
+    nome: str = Field(
         ..., min_length=1, max_length=100, description="Full name of the chef"
     )
     cpf: str = Field(..., description="CPF (11 digits, strictly validated)")
-    salary: Decimal = Field(..., gt=0, decimal_places=2, description="Monthly salary")
-    specialty: Optional[str] = Field(
+    salario: Decimal = Field(..., gt=0, decimal_places=2, description="Monthly salary")
+    especialidade: Optional[str] = Field(
         None, max_length=50, description="Culinary specialty"
     )
 

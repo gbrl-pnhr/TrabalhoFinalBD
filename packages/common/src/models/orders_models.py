@@ -3,15 +3,15 @@ from decimal import Decimal
 from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
-OrderStatus = Literal["OPEN", "CLOSED", "CANCELLED"]
+OrderStatus = Literal['ABERTO', 'FECHADO', 'CANCELADO']
 
 
 class OrderItemBase(BaseModel):
     """Base fields for an order item."""
 
-    dish_id: int = Field(..., description="ID of the dish (prato)")
-    quantity: int = Field(..., gt=0, description="Quantity of the dish")
-    notes: Optional[str] = Field(None, description="Special instructions")
+    id_prato: int = Field(..., description="ID of the dish (prato)")
+    quantidade: int = Field(..., gt=0, description="Quantity of the dish")
+    observacoes: Optional[str] = Field(None, description="Special instructions")
 
 
 class OrderItemCreate(OrderItemBase):
@@ -20,33 +20,33 @@ class OrderItemCreate(OrderItemBase):
 
 class OrderItemResponse(OrderItemBase):
     id: int = Field(..., description="Unique identifier of the order item")
-    dish_name: str = Field(..., description="Name of the dish (joined data)")
-    unit_price: Decimal = Field(..., description="Price of the dish at time of order")
-    total_price: Decimal = Field(..., description="Calculated total (price * quantity)")
+    nome_prato: str = Field(..., description="Name of the dish (joined data)")
+    preco_unitario: Decimal = Field(..., description="Price of the dish at time of order")
+    preco_total: Decimal = Field(..., description="Calculated total (price * quantity)")
     model_config = ConfigDict(from_attributes=True)
 
 
 class OrderCreate(BaseModel):
-    customer_id: int = Field(..., description="ID of the paying customer")
-    table_id: int = Field(..., description="ID of the table")
-    waiter_id: int = Field(..., description="ID of the waiter")
-    customer_count: int = Field(1, gt=0, description="Number of people at the table")
+    id_cliente: int = Field(..., description="ID of the paying customer")
+    id_mesa: int = Field(..., description="ID of the table")
+    id_garcom: int = Field(..., description="ID of the waiter")
+    quantidade_cliente: int = Field(1, gt=0, description="Number of people at the table")
 
 
 class OrderResponse(BaseModel):
     """Schema for Order Header details."""
     id: int = Field(..., description="Unique identifier of the order")
-    customer_id: int = Field(..., description="ID of the customer")
-    created_at: datetime = Field(..., description="Timestamp of creation")
-    total_value: Decimal = Field(..., description="Total accumulated value")
+    id_cliente: int = Field(..., description="ID of the customer")
+    criado_em: datetime = Field(..., description="Timestamp of creation")
+    valor_total: Decimal = Field(..., description="Total accumulated value")
     status: OrderStatus = Field(..., description="Current status of the order")
-    customer_count: int = Field(..., description="Number of people")
-    customer_name: str = Field(..., description="Name of the customer")
-    table_id: int = Field(..., description="Database ID of the table")
-    waiter_id: int = Field(..., description="Database ID of the waiter")
-    table_number: int = Field(..., description="Physical Table number")
-    waiter_name: str = Field(..., description="Name of the waiter")
-    items: List[OrderItemResponse] = Field(
+    quantidade_cliente: int = Field(..., description="Number of people")
+    nome_cliente: str = Field(..., description="Name of the customer")
+    id_mesa: int = Field(..., description="Database ID of the table")
+    id_garcom: int = Field(..., description="Database ID of the waiter")
+    numero_mesa: int = Field(..., description="Physical Table number")
+    nome_garcom: str = Field(..., description="Name of the waiter")
+    itens: List[OrderItemResponse] = Field(
         default=[], description="List of items in the order"
     )
     model_config = ConfigDict(from_attributes=True)

@@ -23,13 +23,13 @@ class CustomerRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating customer: {customer.name}")
+            logger.info(f"Creating customer: {customer.nome}")
             try:
                 cur.execute(
                     query,
                     {
-                        "name": customer.name,
-                        "phone": customer.phone,
+                        "name": customer.nome,
+                        "phone": customer.telefone,
                         "email": customer.email,
                     },
                 )
@@ -41,10 +41,10 @@ class CustomerRepository:
 
                 return CustomerResponse(
                     id=row["id_cliente"],
-                    name=row["nome"],
-                    phone=row["telefone"],
+                    nome=row["nome"],
+                    telefone=row["telefone"],
                     email=row["email"],
-                    orders=[],  # New customer has no orders
+                    pedidos=[],
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -62,17 +62,19 @@ class CustomerRepository:
             rows = cur.fetchall()
             results = []
             for row in rows:
-                orders_data = row["orders"]
+                orders_data = row["pedidos"]
                 if isinstance(orders_data, str):
                     orders_data = json.loads(orders_data)
+                if orders_data is None:
+                    orders_data = []
                 orders_list = [OrderResponse(**o) for o in orders_data]
                 results.append(
                     CustomerResponse(
                         id=row["id_cliente"],
-                        name=row["nome"],
-                        phone=row["telefone"],
+                        nome=row["nome"],
+                        telefone=row["telefone"],
                         email=row["email"],
-                        orders=orders_list,
+                        pedidos=orders_list,
                     )
                 )
             return results

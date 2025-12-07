@@ -18,15 +18,15 @@ class ChefRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating chef: {chef.name}")
+            logger.info(f"Creating chef: {chef.nome}")
             try:
                 cur.execute(
                     query,
                     {
-                        "name": chef.name,
+                        "name": chef.nome,
                         "cpf": chef.cpf,
-                        "salary": chef.salary,
-                        "specialty": chef.specialty,
+                        "salary": chef.salario,
+                        "specialty": chef.especialidade,
                     },
                 )
                 row = cur.fetchone()
@@ -37,10 +37,10 @@ class ChefRepository:
 
                 return ChefResponse(
                     id=row["id_funcionario"],
-                    name=row["nome"],
+                    nome=row["nome"],
                     cpf=row["cpf"],
-                    salary=row["salario"],
-                    specialty=row["especialidade"],
+                    salario=row["salario"],
+                    especialidade=row["especialidade"],
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -58,10 +58,10 @@ class ChefRepository:
             return [
                 ChefResponse(
                     id=row["id_funcionario"],
-                    name=row["nome"],
+                    nome=row["nome"],
                     cpf=row["cpf"],
-                    salary=row["salario"],
-                    specialty=row["especialidade"],
+                    salario=row["salario"],
+                    especialidade=row["especialidade"],
                 )
                 for row in rows
             ]

@@ -22,14 +22,14 @@ class TableRepository:
         query = sql_file.read_text()
 
         with self.conn.cursor() as cur:
-            logger.info(f"Creating table #{table.number} at {table.location}")
+            logger.info(f"Creating table #{table.numero} at {table.localizacao}")
             try:
                 cur.execute(
                     query,
                     {
-                        "number": table.number,
-                        "capacity": table.capacity,
-                        "location": table.location,
+                        "number": table.numero,
+                        "capacity": table.capacidade,
+                        "location": table.localizacao,
                     },
                 )
                 row = cur.fetchone()
@@ -40,10 +40,10 @@ class TableRepository:
 
                 return TableResponse(
                     id=row["id_mesa"],
-                    number=row["numero"],
-                    capacity=row["capacidade"],
-                    location=row["localizacao"],
-                    is_occupied=False
+                    numero=row["numero"],
+                    capacidade=row["capacidade"],
+                    localizacao=row["localizacao"],
+                    eh_ocupada=False
                 )
             except Exception as e:
                 self.conn.rollback()
@@ -64,10 +64,10 @@ class TableRepository:
             return [
                 TableResponse(
                     id=row["id_mesa"],
-                    number=row["numero"],
-                    capacity=row["capacidade"],
-                    location=row["localizacao"],
-                    is_occupied=row["is_occupied"]
+                    numero=row["numero"],
+                    capacidade=row["capacidade"],
+                    localizacao=row["localizacao"],
+                    eh_ocupada=row["is_occupied"]
                 )
                 for row in rows
             ]
@@ -86,8 +86,8 @@ class TableRepository:
 
             return TableResponse(
                 id=row["id_mesa"],
-                number=row["numero"],
-                capacity=row["capacidade"],
-                location=row["localizacao"],
-                is_occupied=row["is_occupied"]
+                numero=row["numero"],
+                capacidade=row["capacidade"],
+                localizacao=row["localizacao"],
+                eh_ocupada=row["is_occupied"]
             )
