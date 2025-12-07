@@ -15,15 +15,15 @@ class OrdersView:
             st.session_state["flash_msg"] = None
 
     def render(self):
-        st.header("📝 Order Management")
+        st.header("📝 Gestor de Pedidos")
 
         self._handle_flash_messages()
 
         self.vm.load_active_orders()
         if self.vm.last_error:
-            st.error(f"Error loading orders: {self.vm.last_error}")
+            st.error(f"Erro carregando pedidos: {self.vm.last_error}")
 
-        tab_list, tab_create = st.tabs(["Active Orders", "Open New Table"])
+        tab_list, tab_create = st.tabs(["Pedidos Ativos", "Nova Mesa Sendo Utilizada"])
 
         with tab_list:
             self._render_active_orders_tab()
@@ -53,14 +53,14 @@ class OrdersView:
             if not c_id or not w_id or not t_id:
                 st.session_state["flash_msg"] = {
                     "type": "error",
-                    "text": "All fields are required.",
+                    "text": "Todos os campos são obrigatórios.",
                 }
                 return
 
             if self.vm.create_order(c_id, t_id, w_id, count):
                 st.session_state["flash_msg"] = {
                     "type": "success",
-                    "text": "Table opened successfully!",
+                    "text": "Mesa adicionada com sucesso!",
                 }
             else:
                 st.session_state["flash_msg"] = {
@@ -78,7 +78,7 @@ class OrdersView:
         qty = st.session_state.get(qty_key)
 
         if self.vm.add_item_to_order(order_id, dish_id, qty):
-            st.toast(f"✅ Item added to Order #{order_id}")
+            st.toast(f"✅ Item adicionado ao pedido #{order_id}")
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -87,11 +87,11 @@ class OrdersView:
         item_id = st.session_state.get(sel_key)
 
         if not item_id:
-            st.toast("⚠️ No item selected.")
+            st.toast("⚠️ Nenhum item selecionado.")
             return
 
         if self.vm.remove_item_from_order(order_id, item_id):
-            st.toast("✅ Item removed.")
+            st.toast("✅ Item removido.")
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -99,7 +99,7 @@ class OrdersView:
         if self.vm.close_order(order_id):
             st.session_state["flash_msg"] = {
                 "type": "success",
-                "text": f"Order #{order_id} closed & paid.",
+                "text": f"Pedido #{order_id} concluído e pago.",
             }
             st.rerun()
         else:
@@ -108,10 +108,12 @@ class OrdersView:
     def _render_active_orders_tab(self):
         orders = self.vm.active_orders
         if not orders:
-            st.info("No active orders found. Open a new table to get started.")
+            st.info("Nenhum pedido aberto encontrado. Adicione uma nova mesa para começar.")
             return
 
         df_orders = pd.DataFrame([o.model_dump() for o in orders])
+        print(df_orders["status"])
+        df_orders["status"].apply(lambda x: "Aberto" if x == "OPEN" else "Fechado")
         cols = ["id", "customer_name", "table_number", "total_value", "status"]
         display_cols = [c for c in cols if c in df_orders.columns]
 
@@ -126,7 +128,7 @@ class OrdersView:
         )
 
         st.markdown("---")
-        st.subheader("Manage Orders")
+        st.subheader("Gerenciar Pedidos")
 
         for order in orders:
             self._render_order_card_fragment(order.id)
@@ -142,13 +144,13 @@ class OrdersView:
         if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
             return
         t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
-        label = f"📋 Order #{order.id} | Table {t_label} | ${order.total_value:,.2f}"
+        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.total_value:,.2f}"
         with st.expander(label, expanded=False):
             self._render_order_items_table(order)
             st.divider()
 
             tab_add, tab_rem, tab_pay = st.tabs(
-                ["Add Item", "Remove Item", "Pay & Close"]
+                ["Adicionar Item", "Remover Item", "Pagar e Fechar"]
             )
 
             with tab_add:
@@ -158,9 +160,9 @@ class OrdersView:
                 self._render_remove_item_form(order)
 
             with tab_pay:
-                st.caption("Review the total and proceed to payment.")
+                st.caption("Rever o total e prosseguir ao pagamento.")
                 st.button(
-                    "💰 Pay & Close Order",
+                    "💰 Pagar e Fechar Pedido",
                     key=f"btn_close_{order.id}",
                     type="primary",
                     on_click=self._handle_close_order,
@@ -173,13 +175,13 @@ class OrdersView:
         Avoids Pandas overhead for small data fragments.
         """
         if not order.items:
-            st.info("No items ordered yet.")
+            st.info("Nenhum item pedido ainda.")
             return
         items_data = [
             {
-                "Dish": i.dish_name,
-                "Qty": i.quantity,
-                "Price": f"${i.unit_price:.2f}",
+                "Preço": i.dish_name,
+                "Quantidade": i.quantity,
+                "Preço": f"${i.unit_price:.2f}",
                 "Subtotal": f"${(i.unit_price * i.quantity):.2f}",
             }
             for i in order.items
@@ -190,16 +192,16 @@ class OrdersView:
         c1, c2, c3 = st.columns([2, 1, 1])
         with c1:
             st.number_input(
-                "Dish ID", min_value=1, step=1, key=f"add_dish_id_{order_id}"
+                "ID do Prato", min_value=1, step=1, key=f"add_dish_id_{order_id}"
             )
         with c2:
             st.number_input(
-                "Qty", min_value=1, step=1, value=1, key=f"add_qty_{order_id}"
+                "Quantidade", min_value=1, step=1, value=1, key=f"add_qty_{order_id}"
             )
         with c3:
             st.write("")
             st.button(
-                "Add",
+                "Adicionar",
                 key=f"btn_add_{order_id}",
                 on_click=self._handle_add_item,
                 args=(order_id,),
@@ -207,7 +209,7 @@ class OrdersView:
 
     def _render_remove_item_form(self, order):
         if not order.items:
-            st.info("No items to remove.")
+            st.info("Nenhum item para remover.")
             return
 
         items_map = {
@@ -217,7 +219,7 @@ class OrdersView:
         c1, c2 = st.columns([3, 1])
         with c1:
             st.selectbox(
-                "Select Item",
+                "Selecionar Item",
                 options=items_map.keys(),
                 format_func=lambda x: items_map[x],
                 key=f"rem_item_sel_{order.id}",
@@ -225,31 +227,31 @@ class OrdersView:
             )
         with c2:
             st.button(
-                "🗑️ Remove",
+                "🗑️ Remover",
                 key=f"btn_del_{order.id}",
                 on_click=self._handle_remove_item,
                 args=(order.id,),
             )
 
     def _render_create_order_tab(self):
-        st.subheader("Open New Table")
+        st.subheader("Nova Mesa Sendo Utilizada")
 
         options = self.vm.get_new_order_options()
         if self.vm.last_error:
             st.error(self.vm.last_error)
 
         with st.form("new_order_form"):
-            st.write("Select details to open a new tab:")
+            st.write("Adicione informações para adicionar uma nova mesa:")
             c1, c2 = st.columns(2)
             with c1:
                 st.selectbox(
-                    "Select Customer",
+                    "Cliente",
                     options=options.customers.keys(),
                     format_func=lambda x: options.customers.get(x, "Unknown"),
                     key="new_order_customer",
                 )
                 st.selectbox(
-                    "Assign Waiter",
+                    "Atribuir Garçom",
                     options=options.waiters.keys(),
                     format_func=lambda x: options.waiters.get(x, "Unknown"),
                     key="new_order_waiter",
@@ -257,20 +259,20 @@ class OrdersView:
 
             with c2:
                 if not options.tables:
-                    st.warning("No free tables available.")
+                    st.warning("Nenhuma mesa disponível.")
                     st.selectbox(
-                        "Select Table", options=[], disabled=True, key="new_order_table"
+                        "Escolher Mesa", options=[], disabled=True, key="new_order_table"
                     )
                 else:
                     st.selectbox(
-                        "Select Table",
+                        "Escolher Mesa",
                         options=options.tables.keys(),
                         format_func=lambda x: options.tables.get(x, "Unknown"),
                         key="new_order_table",
                     )
 
                 st.number_input(
-                    "Number of Guests",
+                    "Número de Pessoas",
                     min_value=1,
                     step=1,
                     value=2,
@@ -279,7 +281,7 @@ class OrdersView:
 
             st.markdown("---")
             st.form_submit_button(
-                "Open Table",
+                "Adicionar Mesa",
                 width="stretch",
                 on_click=self._handle_create_order,
                 disabled=not options.tables
