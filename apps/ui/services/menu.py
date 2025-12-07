@@ -16,7 +16,9 @@ class MenuService:
         return [DishResponse.model_validate(item) for item in data]
 
     def create_dish(self, dish: DishCreate) -> DishResponse:
-        response_data = self.client.post("/menu/dishes", dish.model_dump())
+        response_data = self.client.post(
+            "/menu/dishes",
+            dish.model_dump(mode='json'))
         return DishResponse.model_validate(response_data)
 
     def update_dish(self, dish_id: int, updates: DishUpdate) -> DishResponse:
@@ -25,7 +27,7 @@ class MenuService:
         """
         response_data = self.client.patch(
             f"/menu/dishes/{dish_id}",
-            updates.model_dump(exclude_unset=True)
+            updates.model_dump(mode='json', exclude_unset=True)
         )
         return DishResponse.model_validate(response_data)
 
