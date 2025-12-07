@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict
 from dataclasses import dataclass
 from apps.api.modules import ReviewResponse, ReviewCreate, ReviewUpdate
 from apps.ui.services.reviews import ReviewService
