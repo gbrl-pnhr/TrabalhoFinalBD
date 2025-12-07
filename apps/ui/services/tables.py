@@ -11,9 +11,15 @@ class TableService:
         self.client = APIClient()
 
     def get_tables(self) -> List[TableResponse]:
+        """Fetch all tables."""
         data = self.client.get("/tables/")
         return [TableResponse.model_validate(t) for t in data]
 
     def create_table(self, table: TableCreate) -> TableResponse:
+        """Register a new table."""
         data = self.client.post("/tables/", table.model_dump())
         return TableResponse.model_validate(data)
+
+    def delete_table(self, table_id: int) -> None:
+        """Remove a table from the layout."""
+        self.client.delete(f"/tables/{table_id}")

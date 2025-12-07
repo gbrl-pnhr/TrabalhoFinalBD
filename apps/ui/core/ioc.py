@@ -3,10 +3,10 @@ from pathlib import Path
 import streamlit as st
 
 from apps.ui.viewmodels.customers import CustomersViewModel
+from apps.ui.viewmodels.menu import MenuViewModel
 
 project_root = Path(__file__).resolve().parents[3]
 sys.path.append(str(project_root))
-
 from apps.ui.services.reviews import ReviewService
 from apps.ui.services.menu import MenuService
 from apps.ui.services.customers import CustomerService
@@ -18,6 +18,7 @@ from apps.ui.viewmodels.reviews import ReviewsViewModel
 from apps.ui.viewmodels.dashboard import DashboardViewModel
 from apps.ui.viewmodels.orders import OrdersViewModel
 from apps.ui.viewmodels.staff import StaffViewModel
+from apps.ui.viewmodels.table import TableViewModel
 
 
 class DIContainer:
@@ -88,6 +89,16 @@ class DIContainer:
     @staticmethod
     def get_staff_viewmodel() -> StaffViewModel:
         return StaffViewModel(staff_service=DIContainer._get_staff_service())
+
+    @staticmethod
+    def get_table_viewmodel() -> TableViewModel:
+        """Factory for TableViewModel."""
+        return TableViewModel(table_service=DIContainer._get_table_service())
+
+    @staticmethod
+    def get_menu_viewmodel() -> MenuViewModel:
+        """Factory for TableViewModel."""
+        return MenuViewModel(menu_service=DIContainer._get_menu_service())
 
     @staticmethod
     def get_customers_viewmodel() -> CustomersViewModel:
