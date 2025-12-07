@@ -33,8 +33,8 @@ class StaffService:
         self.get_waiters.clear()
 
     @st.cache_data(ttl=60, show_spinner=False)
-    def get_chefs(self) -> List[ChefResponse]:
-        data = self.client.get("/staff/chefs")
+    def get_chefs(_self) -> List[ChefResponse]:
+        data = _self.client.get("/staff/chefs")
         return [ChefResponse.model_validate(item) for item in data]
 
     def create_chef(self, chef_data: ChefCreate) -> ChefResponse:

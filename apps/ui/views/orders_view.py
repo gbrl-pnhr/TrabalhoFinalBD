@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from apps.api.modules import OrderResponse
 from apps.ui.viewmodels.orders import OrdersViewModel
 
 
@@ -79,6 +80,8 @@ class OrdersView:
 
         if self.vm.add_item_to_order(order_id, dish_id, qty):
             st.toast(f"✅ Item added to Order #{order_id}")
+            # Rerun to refresh the list with the new item
+            st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -92,6 +95,8 @@ class OrdersView:
 
         if self.vm.remove_item_from_order(order_id, item_id):
             st.toast("✅ Item removed.")
+            # Rerun to refresh the list (remove the item from view)
+            st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -127,18 +132,16 @@ class OrdersView:
 
         st.markdown("---")
         st.subheader("Manage Orders")
-
         for order in orders:
-            self._render_order_card_fragment(order.id)
+            self._render_order_card_fragment(order)
 
     @st.fragment
-    def _render_order_card_fragment(self, order_id: int):
+    def _render_order_card_fragment(self, order: OrderResponse):
         """
         Renders a single order card.
         Decorated with @st.fragment to enable granular re-rendering.
-        When a user interacts with widgets inside this function, only this function re-runs.
+        Crucial Optimization: Accepts the full 'order' object to avoid N+1 API calls.
         """
-        order = self.vm.get_order_by_id(order_id)
         if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
             return
         t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
