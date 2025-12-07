@@ -1,7 +1,10 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 import pandas as pd
 import time
-
 from apps.api.modules import DishCreate, DishUpdate
 from apps.ui.services.menu import MenuService
 from apps.ui.components.forms import render_create_dish_form
@@ -15,9 +18,16 @@ tab_list, tab_create, tab_manage = st.tabs(
     ["Menu List", "Create Dish", "Manage (Edit/Delete)"]
 )
 
+
 @st.cache_data(ttl=300)
 def get_cached_menu():
     return menu_service.get_dishes()
+
+
+@st.cache_data(ttl=300)
+def get_cached_categories():
+    return menu_service.get_categories()
+
 
 with tab_list:
     try:
@@ -28,7 +38,7 @@ with tab_list:
             df_dishes = pd.DataFrame([d.model_dump() for d in dishes_data])
             st.dataframe(
                 df_dishes,
-                width='stretch',
+                width="stretch",
                 hide_index=True,
                 column_config={"price": st.column_config.NumberColumn(format="$%.2f")},
             )
@@ -39,7 +49,8 @@ with tab_list:
         st.error(f"Error loading menu: {e}")
 
 with tab_create:
-    new_dish_data = render_create_dish_form()
+    categories = get_cached_categories()
+    new_dish_data = render_create_dish_form(existing_categories=categories)
     if new_dish_data:
         try:
             dish_payload = DishCreate(

@@ -1,4 +1,8 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from apps.ui.services.analytics import AnalyticsService
 from apps.ui.utils.calculations import calculate_revenue_metrics
 from apps.ui.utils.exceptions import APIConnectionError

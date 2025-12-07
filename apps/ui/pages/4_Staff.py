@@ -1,6 +1,9 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 import time
-
 from apps.api.modules import WaiterCreate, ChefCreate
 from apps.ui.services.staff import StaffService
 from apps.ui.utils.exceptions import AppError

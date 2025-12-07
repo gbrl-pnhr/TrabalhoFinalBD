@@ -1,0 +1,1 @@
+SELECT DISTINCT categoria FROM prato ORDER BY categoria;

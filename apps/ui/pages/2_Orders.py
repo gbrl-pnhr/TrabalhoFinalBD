@@ -1,7 +1,10 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 import pandas as pd
 import time
-
 from apps.api.modules import OrderItemCreate, OrderCreate
 from apps.ui.services.order import OrderService
 from apps.ui.services.customers import CustomerService

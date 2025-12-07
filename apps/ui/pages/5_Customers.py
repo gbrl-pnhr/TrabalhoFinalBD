@@ -1,6 +1,9 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 import pandas as pd
-
 from apps.api.modules import CustomerCreate
 from apps.ui.services.customers import CustomerService
 from apps.ui.utils.exceptions import AppError
@@ -19,7 +22,6 @@ with tab_list:
             st.info("No customers registered yet.")
         else:
             df = pd.DataFrame([c.model_dump() for c in customers])
-            # Filter columns for display
             cols = ["id", "name", "email", "phone_number"]
             display_cols = [c for c in cols if c in df.columns]
 

@@ -1,4 +1,7 @@
+import sys
 from pathlib import Path
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).parent.parent

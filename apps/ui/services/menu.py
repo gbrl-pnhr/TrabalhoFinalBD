@@ -1,5 +1,8 @@
+import sys
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from typing import List
-
 from apps.api.modules import DishResponse, DishCreate, DishUpdate
 from apps.ui.services.api_client import APIClient
 
@@ -15,10 +18,12 @@ class MenuService:
         data = self.client.get("/menu/dishes")
         return [DishResponse.model_validate(item) for item in data]
 
+    def get_categories(self) -> List[str]:
+        """Fetch list of existing categories from the API."""
+        return self.client.get("/menu/categories")
+
     def create_dish(self, dish: DishCreate) -> DishResponse:
-        response_data = self.client.post(
-            "/menu/dishes",
-            dish.model_dump(mode='json'))
+        response_data = self.client.post("/menu/dishes", dish.model_dump(mode='json'))
         return DishResponse.model_validate(response_data)
 
     def update_dish(self, dish_id: int, updates: DishUpdate) -> DishResponse:

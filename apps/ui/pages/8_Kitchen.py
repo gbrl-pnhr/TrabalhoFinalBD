@@ -1,4 +1,8 @@
+import sys
+from pathlib import Path
 import streamlit as st
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 import time
 from apps.ui.services.order import OrderService
 from apps.ui.components.cards import render_kitchen_ticket

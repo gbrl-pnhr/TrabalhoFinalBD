@@ -16,6 +16,16 @@ class MenuRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
+    def get_categories(self) -> List[str]:
+        """Fetch all unique categories currently in the database."""
+        sql_file = QUERY_PATH / "categories.sql"
+        query = sql_file.read_text()
+
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+            rows = cur.fetchall()
+            return [row["categoria"] for row in rows]
+
     def create_dish(self, dish: DishCreate) -> DishResponse:
         """
         Insert a new dish into the database.

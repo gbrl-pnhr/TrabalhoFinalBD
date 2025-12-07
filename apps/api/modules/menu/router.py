@@ -11,6 +11,22 @@ logger = logging.getLogger(__name__)
 def get_repository(conn = Depends(get_db_connection)):
     return MenuRepository(conn)
 
+@router.get("/categories", response_model=List[str])
+def list_categories(repo: MenuRepository = Depends(get_repository)):
+    """
+    Get distinct categories available in the menu.
+    """
+    try:
+        return repo.get_categories()
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error fetching categories: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
+
 @router.get("/dishes", response_model=List[DishResponse])
 def list_dishes(repo: MenuRepository = Depends(get_repository)):
     """

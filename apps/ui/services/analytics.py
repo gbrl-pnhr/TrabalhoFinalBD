@@ -1,5 +1,8 @@
 from typing import List
-
+import sys
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from apps.api.modules import DailyRevenue, DishPopularity, WaiterPerformance
 from apps.ui.services.api_client import APIClient
 
