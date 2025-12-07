@@ -6,22 +6,19 @@ from apps.ui.viewmodels.orders import OrdersViewModel
 class OrdersView:
     """
     Handles the UI Rendering for the Orders Page.
-    Uses 'Callback' architecture for event handling to ensure instant updates.
+    Uses '@st.fragment' for granular re-rendering of order cards.
     """
 
     def __init__(self, view_model: OrdersViewModel):
         self.vm = view_model
-        # Initialize Flash Message State
         if "flash_msg" not in st.session_state:
             st.session_state["flash_msg"] = None
 
     def render(self):
         st.header("📝 Order Management")
 
-        # 1. Display & Clear Flash Messages (Toast or Alert)
         self._handle_flash_messages()
 
-        # 2. Load Data (Happens on every rerun)
         self.vm.load_active_orders()
         if self.vm.last_error:
             st.error(f"Error loading orders: {self.vm.last_error}")
@@ -73,6 +70,7 @@ class OrdersView:
         except Exception as e:
             st.session_state["flash_msg"] = {"type": "error", "text": str(e)}
 
+
     def _handle_add_item(self, order_id: int):
         dish_key = f"add_dish_id_{order_id}"
         qty_key = f"add_qty_{order_id}"
@@ -81,34 +79,22 @@ class OrdersView:
         qty = st.session_state.get(qty_key)
 
         if self.vm.add_item_to_order(order_id, dish_id, qty):
-            st.session_state["flash_msg"] = {
-                "type": "success",
-                "text": f"Item added to Order #{order_id}",
-            }
+            st.toast(f"✅ Item added to Order #{order_id}")
         else:
-            st.session_state["flash_msg"] = {
-                "type": "error",
-                "text": self.vm.last_error,
-            }
+            st.toast(f"❌ {self.vm.last_error}")
 
     def _handle_remove_item(self, order_id: int):
         sel_key = f"rem_item_sel_{order_id}"
         item_id = st.session_state.get(sel_key)
 
         if not item_id:
-            st.session_state["flash_msg"] = {
-                "type": "error",
-                "text": "No item selected.",
-            }
+            st.toast("⚠️ No item selected.")
             return
 
         if self.vm.remove_item_from_order(order_id, item_id):
-            st.session_state["flash_msg"] = {"type": "success", "text": "Item removed."}
+            st.toast("✅ Item removed.")
         else:
-            st.session_state["flash_msg"] = {
-                "type": "error",
-                "text": self.vm.last_error,
-            }
+            st.toast(f"❌ {self.vm.last_error}")
 
     def _handle_close_order(self, order_id: int):
         if self.vm.close_order(order_id):
@@ -116,11 +102,9 @@ class OrdersView:
                 "type": "success",
                 "text": f"Order #{order_id} closed & paid.",
             }
+            st.rerun()
         else:
-            st.session_state["flash_msg"] = {
-                "type": "error",
-                "text": self.vm.last_error,
-            }
+            st.toast(f"❌ {self.vm.last_error}")
 
 
     def _render_active_orders_tab(self):
@@ -147,34 +131,47 @@ class OrdersView:
         st.subheader("Manage Orders")
 
         for order in orders:
-            t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
-            label = (
-                f"📋 Order #{order.id} | Table {t_label} | ${order.total_value:,.2f}"
+            self._render_order_card_fragment(order.id)
+
+    @st.fragment
+    def _render_order_card_fragment(self, order_id: int):
+        """
+        Renders a single order card.
+        Decorated with @st.fragment to enable granular re-rendering.
+        When a user interacts with widgets inside this function, only this function re-runs.
+        """
+
+        order = self.vm.get_order_by_id(order_id)
+
+        if not order or str(order.status).lower() in ["closed", "paid", "completed"]:
+            return
+
+        t_label = getattr(order, "table_number", getattr(order, "table_id", "?"))
+        label = f"📋 Order #{order.id} | Table {t_label} | ${order.total_value:,.2f}"
+
+        with st.expander(label, expanded=False):
+            self._render_order_items_table(order)
+            st.divider()
+
+            tab_add, tab_rem, tab_pay = st.tabs(
+                ["Add Item", "Remove Item", "Pay & Close"]
             )
 
-            with st.expander(label, expanded=False):
-                self._render_order_items_table(order)
-                st.divider()
+            with tab_add:
+                self._render_add_item_form(order.id)
 
-                tab_add, tab_rem, tab_pay = st.tabs(
-                    ["Add Item", "Remove Item", "Pay & Close"]
+            with tab_rem:
+                self._render_remove_item_form(order)
+
+            with tab_pay:
+                st.caption("Review the total and proceed to payment.")
+                st.button(
+                    "💰 Pay & Close Order",
+                    key=f"btn_close_{order.id}",
+                    type="primary",
+                    on_click=self._handle_close_order,
+                    args=(order.id,),
                 )
-
-                with tab_add:
-                    self._render_add_item_form(order.id)
-
-                with tab_rem:
-                    self._render_remove_item_form(order)
-
-                with tab_pay:
-                    st.caption("Review the total and proceed to payment.")
-                    st.button(
-                        "💰 Pay & Close Order",
-                        key=f"btn_close_{order.id}",
-                        type="primary",
-                        on_click=self._handle_close_order,
-                        args=(order.id,),
-                    )
 
     def _render_order_items_table(self, order):
         if not order.items:
@@ -199,21 +196,23 @@ class OrdersView:
         )
 
     def _render_add_item_form(self, order_id: int):
-        with st.form(key=f"form_add_{order_id}"):
-            c1, c2, c3 = st.columns([2, 1, 1])
-            with c1:
-                st.number_input(
-                    "Dish ID", min_value=1, step=1, key=f"add_dish_id_{order_id}"
-                )
-            with c2:
-                st.number_input(
-                    "Qty", min_value=1, step=1, value=1, key=f"add_qty_{order_id}"
-                )
-            with c3:
-                st.write("")
-                st.form_submit_button(
-                    "Add", on_click=self._handle_add_item, args=(order_id,)
-                )
+        c1, c2, c3 = st.columns([2, 1, 1])
+        with c1:
+            st.number_input(
+                "Dish ID", min_value=1, step=1, key=f"add_dish_id_{order_id}"
+            )
+        with c2:
+            st.number_input(
+                "Qty", min_value=1, step=1, value=1, key=f"add_qty_{order_id}"
+            )
+        with c3:
+            st.write("")
+            st.button(
+                "Add",
+                key=f"btn_add_{order_id}",
+                on_click=self._handle_add_item,
+                args=(order_id,)
+            )
 
     def _render_remove_item_form(self, order):
         if not order.items:

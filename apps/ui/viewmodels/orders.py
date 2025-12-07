@@ -1,6 +1,5 @@
 from typing import List, Dict, Optional
 from dataclasses import dataclass
-import streamlit as st
 from apps.api.modules import (
     OrderResponse,
     OrderCreate,
@@ -55,6 +54,16 @@ class OrdersViewModel:
             self.active_orders.sort(key=lambda x: x.id, reverse=True)
         except AppError as e:
             self.last_error = str(e)
+
+    def get_order_by_id(self, order_id: int) -> Optional[OrderResponse]:
+        """
+        Fetches the latest state of a single order.
+        Used by fragments to refresh specific cards without reloading the whole list.
+        """
+        try:
+            return self._order_service.get_order_details(order_id)
+        except AppError:
+            return None
 
     def get_new_order_options(self) -> NewOrderOptions:
         """Fetches auxiliary data needed to open a new table."""
