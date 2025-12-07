@@ -18,6 +18,8 @@ def list_dishes(repo: MenuRepository = Depends(get_repository)):
     """
     try:
         return repo.get_all_dishes()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching dishes: {e}")
         raise HTTPException(
@@ -32,6 +34,8 @@ def create_dish(dish: DishCreate, repo: MenuRepository = Depends(get_repository)
     """
     try:
         return repo.create_dish(dish)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error creating dish: {e}")
         raise HTTPException(

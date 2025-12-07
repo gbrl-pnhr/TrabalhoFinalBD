@@ -21,6 +21,8 @@ def list_tables(repo: TableRepository = Depends(get_repository)):
     """
     try:
         return repo.get_all_tables()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching tables: {e}")
         raise HTTPException(
@@ -38,13 +40,14 @@ def create_table(
     """
     try:
         return repo.create_table(table)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         if "23505" in str(e) or "unique constraint" in str(e).lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Table number {table.number} already exists.",
             )
-
         logger.error(f"Error creating table: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

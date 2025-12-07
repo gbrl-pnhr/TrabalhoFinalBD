@@ -20,6 +20,7 @@ st.header("📝 Order Management")
 
 tab_view, tab_create = st.tabs(["Active Orders", "Open New Table"])
 
+
 def handle_add_item(order_id: int, dish_id: int, qty: int):
     try:
         item_payload = OrderItemCreate(dish_id=dish_id, quantity=qty)
@@ -32,6 +33,7 @@ def handle_add_item(order_id: int, dish_id: int, qty: int):
     except ValueError as e:
         st.error(f"Validation Error: {e}")
 
+
 def handle_remove_item(order_id: int, item_id: int):
     try:
         order_service.remove_item(order_id, item_id)
@@ -40,6 +42,7 @@ def handle_remove_item(order_id: int, item_id: int):
         st.rerun()
     except AppError as e:
         st.error(f"Failed to remove item: {e}")
+
 
 with tab_view:
     try:
@@ -135,21 +138,32 @@ with tab_create:
         w_options = {w.id: w.name for w in waiters}
         submission_data = render_open_order_form(c_options, t_options, w_options)
         if submission_data:
-            try:
-                new_order = OrderCreate(
-                    customer_id=submission_data["customer_id"],
-                    table_id=submission_data["table_id"],
-                    waiter_id=submission_data["waiter_id"],
-                    customer_count=submission_data["customer_count"],
+            selected_table_id = submission_data["table_id"]
+            customer_count = submission_data["customer_count"]
+            selected_table = next(
+                (t for t in tables if t.id == selected_table_id), None
+            )
+            if selected_table and customer_count > selected_table.capacity:
+                st.error(
+                    f"⚠️ Capacity Exceeded! Table {selected_table.number} only holds {selected_table.capacity} people, "
+                    f"but you are trying to seat {customer_count}."
                 )
-                order_service.create_order(new_order)
-                st.success(f"✅ Table Opened Successfully!")
-                time.sleep(1)
-                st.rerun()
-            except AppError as e:
-                st.error(f"Could not create order: {e}")
-            except ValueError as e:
-                st.error(f"Input Validation Error: {e}")
+            else:
+                try:
+                    new_order = OrderCreate(
+                        customer_id=submission_data["customer_id"],
+                        table_id=submission_data["table_id"],
+                        waiter_id=submission_data["waiter_id"],
+                        customer_count=submission_data["customer_count"],
+                    )
+                    order_service.create_order(new_order)
+                    st.success(f"✅ Table Opened Successfully!")
+                    time.sleep(1)
+                    st.rerun()
+                except AppError as e:
+                    st.error(f"Could not create order: {e}")
+                except ValueError as e:
+                    st.error(f"Input Validation Error: {e}")
 
     except AppError as e:
         st.error(f"Could not load required data. Is the backend online? Error: {e}")

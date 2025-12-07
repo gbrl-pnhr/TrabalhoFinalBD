@@ -32,6 +32,8 @@ def create_review(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(ve),
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         error_msg = str(e).lower()
         if "unique constraint" in error_msg:
@@ -88,6 +90,8 @@ def list_reviews_for_dish(
     """
     try:
         return repo.get_reviews_by_dish(dish_id)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"API Error list_reviews_for_dish: {e}")
         raise HTTPException(

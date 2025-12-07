@@ -25,6 +25,8 @@ def get_revenue_stats(repo: AnalyticsRepository = Depends(get_repository)):
     """
     try:
         return repo.get_daily_revenue()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching revenue stats: {e}")
         raise HTTPException(
@@ -40,6 +42,8 @@ def get_popular_dishes(repo: AnalyticsRepository = Depends(get_repository)):
     """
     try:
         return repo.get_top_dishes()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching popular dishes: {e}")
         raise HTTPException(
@@ -55,6 +59,8 @@ def get_staff_stats(repo: AnalyticsRepository = Depends(get_repository)):
     """
     try:
         return repo.get_waiter_performance()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching staff stats: {e}")
         raise HTTPException(

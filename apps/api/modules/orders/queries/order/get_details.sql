@@ -29,7 +29,7 @@ FROM pedido p
     JOIN garcom g ON p.id_funcionario = g.id_funcionario
     LEFT JOIN item_pedido ip ON p.id_pedido = ip.id_pedido
     LEFT JOIN prato pr ON ip.id_prato = pr.id_prato
-WHERE p.id_pedido = :order_id
+WHERE p.id_pedido = %(order_id)s
 GROUP BY
     p.id_pedido,
     p.data_pedido,

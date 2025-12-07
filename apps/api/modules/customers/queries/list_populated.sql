@@ -12,6 +12,8 @@ SELECT
                 'status', p.status,
                 'customer_count', p.quantidade_pessoas,
                 'customer_name', c.nome,
+                'table_id', p.id_mesa,
+                'waiter_id', p.id_funcionario,
                 'table_number', m.numero,
                 'waiter_name', g.nome,
                 'items', COALESCE(

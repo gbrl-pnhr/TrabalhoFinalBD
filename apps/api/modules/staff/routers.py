@@ -17,11 +17,13 @@ def get_waiter_repo(conn=Depends(get_db_connection)):
 def get_chef_repo(conn=Depends(get_db_connection)):
     return ChefRepository(conn)
 
-@router.get("waiters", response_model=List[WaiterResponse])
+@router.get("/waiters", response_model=List[WaiterResponse])
 def list_waiters(repo: WaiterRepository = Depends(get_waiter_repo)):
     """List all waiters."""
     try:
         return repo.get_all_waiters()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching waiters: {e}")
         raise HTTPException(
@@ -29,11 +31,13 @@ def list_waiters(repo: WaiterRepository = Depends(get_waiter_repo)):
             detail="Internal Server Error"
         )
 
-@router.post("waiters", response_model=WaiterResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/waiters", response_model=WaiterResponse, status_code=status.HTTP_201_CREATED)
 def create_waiter(waiter: WaiterCreate, repo: WaiterRepository = Depends(get_waiter_repo)):
     """Register a new waiter."""
     try:
         return repo.create_waiter(waiter)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         if "unique constraint" in str(e).lower() and "cpf" in str(e).lower():
             raise HTTPException(
@@ -46,11 +50,13 @@ def create_waiter(waiter: WaiterCreate, repo: WaiterRepository = Depends(get_wai
             detail="Internal Server Error"
         )
 
-@router.get("chefs", response_model=List[ChefResponse])
+@router.get("/chefs", response_model=List[ChefResponse])
 def list_chefs(repo: ChefRepository = Depends(get_chef_repo)):
     """List all chefs."""
     try:
         return repo.get_all_chefs()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error fetching chefs: {e}")
         raise HTTPException(
@@ -58,11 +64,13 @@ def list_chefs(repo: ChefRepository = Depends(get_chef_repo)):
             detail="Internal Server Error"
         )
 
-@router.post("chefs", response_model=ChefResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/chefs", response_model=ChefResponse, status_code=status.HTTP_201_CREATED)
 def create_chef(chef: ChefCreate, repo: ChefRepository = Depends(get_chef_repo)):
     """Register a new chef."""
     try:
         return repo.create_chef(chef)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         if "unique constraint" in str(e).lower() and "cpf" in str(e).lower():
             raise HTTPException(

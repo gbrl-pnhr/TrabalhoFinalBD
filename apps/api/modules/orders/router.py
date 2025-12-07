@@ -13,6 +13,8 @@ def get_service(conn=Depends(get_db_connection)):
     """Dependency injection for OrderService."""
     try:
         return OrderService(conn)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.exception(f"API Error get_service: {e}")
         raise HTTPException(
@@ -31,6 +33,8 @@ def create_order(
     """
     try:
         return service.create_order(order_data)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.exception(f"API Error create_order: {e}")
         raise HTTPException(
@@ -46,6 +50,8 @@ def list_orders(service: OrderService = Depends(get_service)):
     """
     try:
         return service.list_orders()
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.exception(f"API Error list_orders: {e}")
         raise HTTPException(

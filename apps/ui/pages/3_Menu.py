@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 
-from apps.api.modules import DishCreate
+from apps.api.modules import DishCreate, DishUpdate
 from apps.ui.services.menu import MenuService
 from apps.ui.components.forms import render_create_dish_form
 from apps.ui.utils.exceptions import AppError
