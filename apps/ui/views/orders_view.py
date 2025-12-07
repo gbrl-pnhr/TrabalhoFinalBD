@@ -16,7 +16,7 @@ class OrdersView:
             st.session_state["flash_msg"] = None
 
     def render(self):
-        st.header("📝 Gestor de Pedidos")
+        st.title("📝 Gestor de Pedidos")
 
         self._handle_flash_messages()
 
@@ -117,8 +117,6 @@ class OrdersView:
             return
 
         df_orders = pd.DataFrame([o.model_dump() for o in orders])
-        print(df_orders["status"])
-        df_orders["status"].apply(lambda x: "Aberto" if x == "OPEN" else "Fechado")
         cols = ["id", "customer_name", "table_number", "total_value", "status"]
         display_cols = [c for c in cols if c in df_orders.columns]
 

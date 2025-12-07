@@ -13,12 +13,12 @@ class KitchenView:
         self.vm = view_model
 
     def render(self):
-        st.title("🍳 Kitchen Display System")
+        st.title("🍳 Sistema de Cozinha")
 
         # Layout for auto-refresh controls
         top_col, _ = st.columns([6, 1])
         with top_col:
-            st.caption("Live Feed • Auto-refreshes every 30s")
+            st.caption("Feed Automático • Recarrega a cada 30s")
 
         # Container for the dynamic content
         content_placeholder = st.empty()
@@ -28,7 +28,7 @@ class KitchenView:
 
         with content_placeholder.container():
             if self.vm.last_error:
-                st.error(f"🔌 Connection Lost: {self.vm.last_error}")
+                st.error(f"🔌 Conexão Perdida: {self.vm.last_error}")
             elif not self.vm.tickets:
                 self._render_empty_state()
             else:
@@ -39,13 +39,13 @@ class KitchenView:
         c1, c2 = st.columns([6, 1])
         with c1:
             if self.vm.last_updated:
-                st.caption(f"Last updated: {self.vm.last_updated}")
+                st.caption(f"Última atualização: {self.vm.last_updated}")
         with c2:
-            if st.button("🔄 Refresh"):
+            if st.button("🔄 Recarregar"):
                 st.rerun()
 
     def _render_empty_state(self):
-        st.success("✅ All tickets cleared! Kitchen is quiet.")
+        st.success("✅ Todos os pedidos entregues! A cozinha está calma.")
 
     def _render_ticket_grid(self):
         # Streamlit columns are not a perfect grid, so we chunk the tickets
@@ -65,29 +65,25 @@ class KitchenView:
         Renders a single ticket card.
         Moved here from components/cards.py for better cohesion.
         """
-        # Determine visual style based on urgency
-        border_color = (
-            "red" if ticket.is_alert else None
-        )  # Streamlit doesn't support border color natively in container yet, but logic is ready
 
         with st.container(border=True):
             # Header
-            c1, c2 = st.columns([3, 1])
+            c1, c2 = st.columns([2, 1])
             with c1:
-                st.markdown(f"### 🍽️ Table {ticket.table_label}")
+                st.markdown(f"### 🍽️ Mesa {ticket.table_label}")
                 st.caption(f"#{ticket.order_id} • {ticket.waiter_label}")
             with c2:
                 st.markdown(f"**{ticket.time_elapsed_label}**")
                 if ticket.is_alert:
-                    st.markdown("🔥 **LATE**")
+                    st.markdown("🔥 **ATRASADO**")
                 else:
-                    st.markdown("🔴 PREP")
+                    st.markdown("🔴 PREPARANDO")
 
             st.divider()
 
             # Body
             if not ticket.items:
-                st.warning("Empty Ticket")
+                st.warning("Pedido Vazio")
             else:
                 for item in ticket.items:
                     st.markdown(f"#### **{item.quantity}x** {item.dish_name}")

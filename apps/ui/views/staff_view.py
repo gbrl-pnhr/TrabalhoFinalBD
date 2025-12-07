@@ -12,15 +12,15 @@ class StaffView:
         self.vm = view_model
 
     def render(self):
-        st.title("👨‍🍳 Staff Management")
+        st.title("👨‍🍳 Funcionários")
 
         # Initial data load
         self.vm.load_staff()
 
         if self.vm.last_error:
-            st.error(f"System Alert: {self.vm.last_error}")
+            st.error(f"Alerta de Sistema: {self.vm.last_error}")
 
-        tab_waiters, tab_chefs = st.tabs(["🤵 Waiters", "👨‍🍳 Chefs"])
+        tab_waiters, tab_chefs = st.tabs(["🤵 Garçons", "👨‍🍳 Chefes"])
 
         with tab_waiters:
             self._render_waiters_section()
@@ -32,20 +32,20 @@ class StaffView:
         col_list, col_form = st.columns([2, 1])
 
         with col_list:
-            st.subheader("Current Waiters")
+            st.subheader("Waiters em Serviço")
             if not self.vm.waiters:
-                st.info("No waiters found.")
+                st.info("Nenhum garçom encontrado.")
             else:
                 for w in self.vm.waiters:
                     with st.expander(f"{w.name} (ID: {w.id})"):
                         st.write(f"**CPF:** {w.cpf}")
-                        st.write(f"**Shift:** {w.shift}")
-                        st.write(f"**Salary:** ${w.salary:,.2f}")
-                        st.write(f"**Commission:** {w.commission}%")
+                        st.write(f"**Turno:** {w.shift}")
+                        st.write(f"**Salário:** ${w.salary:,.2f}")
+                        st.write(f"**Commissão:** {w.commission}%")
 
-                        if st.button("🔥 Fire Waiter", key=f"del_w_{w.id}"):
+                        if st.button("🔥 Demitir Garçom", key=f"del_w_{w.id}"):
                             if self.vm.fire_waiter(w.id):
-                                st.toast("✅ Waiter terminated successfully.")
+                                st.toast("✅ Garçom terminado com sucesso.")
                                 st.rerun()
                             else:
                                 st.error(self.vm.last_error)
@@ -54,9 +54,9 @@ class StaffView:
             self._render_waiter_form()
 
     def _render_waiter_form(self):
-        st.subheader("Register Waiter")
+        st.subheader("Registrar Garçom")
         existing_shifts = self.vm.get_existing_shifts()
-        NEW_SHIFT_OPT = "➕ Create New Shift..."
+        NEW_SHIFT_OPT = "➕ Novo Turno..."
         if not existing_shifts:
             existing_shifts = ["Morning", "Evening", "Full Day"]
         options = existing_shifts + [NEW_SHIFT_OPT]

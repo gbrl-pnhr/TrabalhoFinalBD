@@ -60,7 +60,7 @@ class KitchenViewModel:
     def _to_ticket(self, order) -> KitchenTicket:
         """Transforms a raw Order model into a KitchenTicket DTO."""
         # 1. Calculate Time Label
-        time_label = "Just Now"
+        time_label = "Agora há pouco"
         is_alert = False
         if hasattr(order, "created_at") and order.created_at:
             try:
@@ -71,7 +71,7 @@ class KitchenViewModel:
 
                 delta = datetime.now() - created_dt
                 minutes = int(delta.total_seconds() / 60)
-                time_label = f"{minutes} min ago"
+                time_label = f"{minutes} minutos atrás"
                 if minutes > 20:
                     is_alert = True
             except Exception:

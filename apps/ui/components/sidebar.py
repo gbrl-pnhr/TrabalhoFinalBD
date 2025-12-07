@@ -18,7 +18,6 @@ def get_api_status() -> bool:
     except Exception:
         return False
 
-
 def render_global_sidebar(pages_structure):
     """
     Renders the global application sidebar (Layout).
@@ -28,14 +27,26 @@ def render_global_sidebar(pages_structure):
     """
     is_online = get_api_status()
     logo_path = Path(__file__).parent.parent / "assets" / "logo.png"
+    st.markdown("""
+    <style>
+        [data-testid="stSidebar"] {
+            width: 300px !important;
+        }
+        [data-testid="stSidebar"] > div:first-child {
+            width: 300px !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
     with st.sidebar:
-        if logo_path.exists():
-            st.image(str(logo_path), width=50)
-        else:
-            st.image("https://cdn-icons-png.flaticon.com/512/3448/3448609.png", width=50)
-        st.title("Restaurant OS")
+        col1, col2, col3 = st.columns([1, 2, 1])  # middle column is wider
+        with col2:
+            if logo_path.exists():
+                st.image(str(logo_path), width=150)
+            else:
+                st.image("https://cdn-icons-png.flaticon.com/512/3448/3448609.png", width=50)
+        st.title("Restaurante AURORA", text_alignment="center")
         with st.container(border=True):
-            st.caption("System Status")
+            st.caption("Status do Sistema")
             col_icon, col_text = st.columns([1, 4])
             with col_icon:
                 if is_online:
@@ -49,7 +60,7 @@ def render_global_sidebar(pages_structure):
                     st.error("**Offline**")
 
         st.divider()
-        st.subheader("Navigation")
+        st.subheader("Navegação")
         if isinstance(pages_structure, dict):
             for section_name, pages in pages_structure.items():
                 st.caption(section_name.upper())
@@ -59,4 +70,4 @@ def render_global_sidebar(pages_structure):
             for page in pages_structure:
                 st.page_link(page)
         st.divider()
-        st.info("💡 Tip: Use 'R' to refresh.")
+        st.info("💡 Dica: Pressione 'R' para recarregar.")

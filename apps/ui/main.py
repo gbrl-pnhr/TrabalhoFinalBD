@@ -19,14 +19,14 @@ def warm_up_cache():
 warm_up_cache()
 
 pages_structure = {
-    "Analytics": [
+    "Análise": [
         st.Page("pages/1_Dashboard.py", title="Painel Geral", icon="📊", default=True),
     ],
-    "Operations": [
+    "Operações": [
         st.Page("pages/2_Orders.py", title="Pedidos Ativos", icon="📝"),
         st.Page("pages/8_Kitchen.py", title="Cozinha", icon="🍳"),
     ],
-    "Management": [
+    "Gerenciamento": [
         st.Page("pages/3_Menu.py", title="Menus", icon="🍴"),
         st.Page("pages/6_Tables.py", title="Posição das Mesas", icon="🪑"),
         st.Page("pages/4_Staff.py", title="Funcionários", icon="👨‍🍳"),

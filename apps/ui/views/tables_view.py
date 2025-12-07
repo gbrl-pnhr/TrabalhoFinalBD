@@ -12,11 +12,11 @@ class TablesView:
         self.vm = view_model
 
     def render(self):
-        st.title("🪑 Table Layout")
-        st.markdown("Configure the physical layout of the restaurant.")
+        st.title("🪑 Posição das Mesas")
+        st.markdown("Altere a configuração física do restaurante.")
         self.vm.load_tables()
         if self.vm.last_error:
-            st.error(f"System Alert: {self.vm.last_error}")
+            st.error(f"Alerta de Sistema: {self.vm.last_error}")
         col_view, col_manage = st.columns([2, 1])
         with col_view:
             self._render_table_list()
@@ -26,10 +26,10 @@ class TablesView:
             self._render_delete_section()
 
     def _render_table_list(self):
-        st.subheader("Current Layout")
+        st.subheader("Configuração Atual")
         df = self.vm.get_tables_dataframe()
         if df.empty:
-            st.info("No tables configured yet.")
+            st.info("Nenhuma mesa configurada ainda.")
             return
         st.dataframe(
             df,
@@ -43,49 +43,49 @@ class TablesView:
                 "is_occupied": st.column_config.CheckboxColumn("Occupied?"),
             },
         )
-        if st.button("🔄 Refresh Layout"):
+        if st.button("🔄 Recarregar"):
             st.rerun()
 
     def _render_add_form(self):
-        st.subheader("Add New Table")
+        st.subheader("Adicionar Nova Mesa")
         existing_locs = self.vm.get_existing_locations()
-        NEW_LOC_OPT = "➕ New Location..."
+        NEW_LOC_OPT = "➕ Nova Localização..."
         options = existing_locs + [NEW_LOC_OPT]
-        selected_opt = st.selectbox("Location", options=options)
+        selected_opt = st.selectbox("Localização", options=options)
         final_location = selected_opt
         if selected_opt == NEW_LOC_OPT:
             final_location = st.text_input(
-                "Enter Location Name", placeholder="e.g. Rooftop"
+                "Nome da Localização", placeholder="ex.: Varanda"
             )
         next_num = self.vm.get_next_suggestion()
         with st.form("add_table_form"):
-            t_num = st.number_input("Table Number", min_value=1, step=1, value=next_num)
-            t_cap = st.number_input("Capacity", min_value=1, step=1, value=4)
+            t_num = st.number_input("Número da Mesa", min_value=1, step=1, value=next_num)
+            t_cap = st.number_input("Capacidade", min_value=1, step=1, value=4)
             if self.vm.is_number_occupied(t_num):
-                st.warning(f"⚠️ Table {t_num} exists. Choosing this will fail.")
+                st.warning(f"⚠️ A mesa {t_num} já existe.")
 
-            if st.form_submit_button("Create Table", width="stretch"):
+            if st.form_submit_button("Adicionar Mesa", width="stretch"):
                 if self.vm.add_table(
                     number=t_num, capacity=t_cap, location=final_location
                 ):
-                    st.toast(f"✅ Table {t_num} created!")
+                    st.toast(f"✅ Mesa {t_num} criada!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)
 
     def _render_delete_section(self):
-        st.subheader("Remove Table")
+        st.subheader("Remover Mesa")
         if not self.vm.tables:
-            st.caption("No tables to remove.")
+            st.caption("Nenhuma mesa para remover.")
             return
-        table_map = {t.id: f"Table {t.number} ({t.location})" for t in self.vm.tables}
+        table_map = {t.id: f"Mesa {t.number} ({t.location})" for t in self.vm.tables}
 
         selected_id = st.selectbox(
-            "Select Table", options=table_map.keys(), format_func=lambda x: table_map[x]
+            "Selecionar Mesa", options=table_map.keys(), format_func=lambda x: table_map[x]
         )
-        if st.button("🗑️ Delete Selected Table", type="primary"):
+        if st.button("🗑️ Remover Mesa Selecionada", type="primary"):
             if self.vm.delete_table(selected_id):
-                st.toast("✅ Table removed.")
+                st.toast("✅ Mesa removida.")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)

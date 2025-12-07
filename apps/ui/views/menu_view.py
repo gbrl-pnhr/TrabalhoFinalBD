@@ -12,7 +12,7 @@ class MenuView:
         self.vm = view_model
 
     def render(self):
-        st.header("🍴 Menu Management")
+        st.title("🍴 Gestor de Menu")
 
         # Load Data
         self.vm.load_data()
@@ -20,7 +20,7 @@ class MenuView:
             st.error(f"System Error: {self.vm.last_error}")
 
         tab_list, tab_create, tab_manage = st.tabs(
-            ["Menu List", "Create Dish", "Manage (Edit/Delete)"]
+            ["Menu", "Adicionar Prato", "Alterar e Remover"]
         )
 
         with tab_list:
@@ -34,7 +34,7 @@ class MenuView:
 
     def _render_list_tab(self):
         if not self.vm.dishes:
-            st.info("No dishes found in the menu.")
+            st.info("Nenhum prato encontrado no menu.")
             return
 
         df = self.vm.get_dishes_dataframe()
@@ -47,35 +47,35 @@ class MenuView:
                 "id": st.column_config.NumberColumn(format="%d"),
             },
         )
-        if st.button("Refresh List"):
+        if st.button("Recarregar"):
             st.rerun()
 
     def _render_create_tab(self):
-        NEW_CAT_OPTION = "➕ Create New Category..."
+        NEW_CAT_OPTION = "➕ Criar nova categoria..."
         options = self.vm.categories + [NEW_CAT_OPTION]
 
-        st.subheader("New Dish Details")
+        st.subheader("Detalhes do Novo Prato")
 
         c_cat1, c_cat2 = st.columns(2)
         with c_cat1:
-            selected_cat = st.selectbox("Category", options)
+            selected_cat = st.selectbox("Categoria", options)
 
         final_category = selected_cat
         if selected_cat == NEW_CAT_OPTION:
             with c_cat2:
                 final_category = st.text_input(
-                    "Enter New Category Name", placeholder="e.g. Vegan Specials"
+                    "Digite o nome da categoria", placeholder="e.g. Vegan Specials"
                 )
 
         with st.form("create_dish_form"):
-            name = st.text_input("Dish Name")
+            name = st.text_input("Nome do Prato")
             c_price, _ = st.columns(2)
             with c_price:
                 price = st.number_input(
-                    "Price ($)", min_value=0.01, step=0.50, format="%.2f"
+                    "Preço (R$)", min_value=0.01, step=0.50, format="%.2f"
                 )
 
-            submitted = st.form_submit_button("Create Dish", width="stretch")
+            submitted = st.form_submit_button("Adicionar Prato", width="stretch")
 
             if submitted:
                 form_data = DishFormData(
@@ -83,21 +83,21 @@ class MenuView:
                 )
 
                 if self.vm.create_dish(form_data):
-                    st.toast(f"✅ Dish '{name}' created successfully!")
+                    st.toast(f"✅ Prato '{name}' criado com sucesso!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)
 
     def _render_manage_tab(self):
-        st.subheader("Edit or Remove Dishes")
+        st.subheader("Alterar ou Remover Pratos")
 
         dish_map = self.vm.get_dish_lookup()
         if not dish_map:
-            st.info("No dishes available to edit.")
+            st.info("Nenhum prato disponível.")
             return
 
         selected_id = st.selectbox(
-            "Select Dish to Edit",
+            "Escolha o Prato",
             options=dish_map.keys(),
             format_func=lambda x: dish_map[x],
         )
@@ -107,30 +107,30 @@ class MenuView:
             return
 
         with st.form(key="edit_dish_form"):
-            st.write(f"Editing: **{selected_dish.name}**")
+            st.write(f"Prato Selecionado: **{selected_dish.name}**")
             col1, col2 = st.columns(2)
             with col1:
                 new_price = st.number_input(
-                    "New Price ($)", value=float(selected_dish.price), step=0.5
+                    "Novo Preço ($)", value=float(selected_dish.price), step=0.5
                 )
             with col2:
-                new_name = st.text_input("New Name", value=selected_dish.name)
+                new_name = st.text_input("Novo Nome", value=selected_dish.name)
 
-            update_btn = st.form_submit_button("💾 Update Dish Details")
+            update_btn = st.form_submit_button("💾 Atualizar Informações do Prato")
 
         st.write("")
-        delete_btn = st.button("🗑️ Permanently Delete Dish", type="primary")
+        delete_btn = st.button("🗑️ Remover Prato Permanentemente", type="primary")
 
         if update_btn:
             if self.vm.update_dish(selected_id, new_name, new_price):
-                st.toast("✅ Dish updated!")
+                st.toast("✅ Prato atualizado!")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)
 
         if delete_btn:
             if self.vm.delete_dish(selected_id):
-                st.toast("🗑️ Dish deleted.")
+                st.toast("🗑️ Prato removido.")
                 st.rerun()
             else:
                 st.error(self.vm.last_error)
