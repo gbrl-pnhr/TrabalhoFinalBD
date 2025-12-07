@@ -1,23 +1,26 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from typing import List
-from apps.api.core.database import get_db_connection
 from packages.common.src.models.menu_models import DishCreate, DishResponse, DishUpdate
 from apps.api.modules.menu.repository import MenuRepository
 
 router = APIRouter(prefix="/menu", tags=["Menu"])
 logger = logging.getLogger(__name__)
 
+async def get_db_connection(request: Request):
+    async with request.app.state.pool.connection() as conn:
+        yield conn
+
 def get_repository(conn = Depends(get_db_connection)):
     return MenuRepository(conn)
 
 @router.get("/categories", response_model=List[str])
-def list_categories(repo: MenuRepository = Depends(get_repository)):
+async def list_categories(repo: MenuRepository = Depends(get_repository)):
     """
     Get distinct categories available in the menu.
     """
     try:
-        return repo.get_categories()
+        return await repo.get_categories()
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -28,12 +31,12 @@ def list_categories(repo: MenuRepository = Depends(get_repository)):
         )
 
 @router.get("/dishes", response_model=List[DishResponse])
-def list_dishes(repo: MenuRepository = Depends(get_repository)):
+async def list_dishes(repo: MenuRepository = Depends(get_repository)):
     """
     Get all available dishes in the menu.
     """
     try:
-        return repo.get_all_dishes()
+        return await repo.get_all_dishes()
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -44,12 +47,12 @@ def list_dishes(repo: MenuRepository = Depends(get_repository)):
         )
 
 @router.post("/dishes", response_model=DishResponse, status_code=status.HTTP_201_CREATED)
-def create_dish(dish: DishCreate, repo: MenuRepository = Depends(get_repository)):
+async def create_dish(dish: DishCreate, repo: MenuRepository = Depends(get_repository)):
     """
     Add a new dish to the menu.
     """
     try:
-        return repo.create_dish(dish)
+        return await repo.create_dish(dish)
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -60,7 +63,7 @@ def create_dish(dish: DishCreate, repo: MenuRepository = Depends(get_repository)
         )
 
 @router.patch("/dishes/{dish_id}", response_model=DishResponse)
-def update_dish(
+async def update_dish(
     dish_id: int,
     dish_update: DishUpdate,
     repo: MenuRepository = Depends(get_repository)
@@ -69,7 +72,7 @@ def update_dish(
     Update dish details (Price, Name, or Category).
     """
     try:
-        updated_dish = repo.update_dish(dish_id, dish_update)
+        updated_dish = await repo.update_dish(dish_id, dish_update)
         if not updated_dish:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -86,12 +89,12 @@ def update_dish(
         )
 
 @router.delete("/dishes/{dish_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_dish(dish_id: int, repo: MenuRepository = Depends(get_repository)):
+async def delete_dish(dish_id: int, repo: MenuRepository = Depends(get_repository)):
     """
     Remove a dish from the menu.
     """
     try:
-        success = repo.delete_dish(dish_id)
+        success = await repo.delete_dish(dish_id)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Dish not found."

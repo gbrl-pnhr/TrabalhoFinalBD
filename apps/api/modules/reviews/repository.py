@@ -17,29 +17,29 @@ class ReviewRepository:
         self.conn = db_connection
 
     @staticmethod
-    def _check_eligibility(cur, customer_id: int, order_id: int, dish_id: int) -> bool:
+    async def _check_eligibility(cur, customer_id: int, order_id: int, dish_id: int) -> bool:
         """
         Verifies if the customer actually ordered the dish in the specific order.
         """
         sql_file = QUERY_PATH / "check_eligibility.sql"
         query = sql_file.read_text()
-        cur.execute(
+        await cur.execute(
             query,
             {"customer_id": customer_id, "order_id": order_id, "dish_id": dish_id},
         )
-        return cur.fetchone() is not None
+        return await cur.fetchone() is not None
 
-    def create_review(self, review: ReviewCreate) -> ReviewResponse:
+    async def create_review(self, review: ReviewCreate) -> ReviewResponse:
         """
         Submits a new review with strict eligibility checks.
         """
         sql_create = (QUERY_PATH / "create.sql").read_text()
         sql_details = (QUERY_PATH / "get_details.sql").read_text()
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(
                 f"Attempting to create review for Dish {review.id_prato} by Customer {review.id_cliente}"
             )
-            if not self._check_eligibility(
+            if not await self._check_eligibility(
                 cur, review.id_cliente, review.id_pedido, review.id_prato
             ):
                 logger.warning(
@@ -49,7 +49,7 @@ class ReviewRepository:
                     "Eligibility Error: Customer did not order this dish in the specified order."
                 )
             try:
-                cur.execute(
+                await cur.execute(
                     sql_create,
                     {
                         "rating": review.nota,
@@ -59,13 +59,13 @@ class ReviewRepository:
                         "order_id": review.id_pedido,
                     },
                 )
-                row_id = cur.fetchone()
+                row_id = await cur.fetchone()
                 if not row_id:
                     raise Exception("Failed to insert review (No ID returned).")
                 new_id = row_id["id_avaliacao"]
-                cur.execute(sql_details, {"review_id": new_id})
-                row = cur.fetchone()
-                self.conn.commit()
+                await cur.execute(sql_details, {"review_id": new_id})
+                row = await cur.fetchone()
+                await self.conn.commit()
                 if not row:
                     raise Exception("Failed to fetch created review details.")
                 return ReviewResponse(
@@ -78,21 +78,21 @@ class ReviewRepository:
                 )
 
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 if not isinstance(e, ValueError):
                     logger.exception(f"Database error creating review: {e}")
                 raise e
 
-    def get_reviews_by_dish(self, dish_id: int) -> List[ReviewResponse]:
+    async def get_reviews_by_dish(self, dish_id: int) -> List[ReviewResponse]:
         """
         Fetch all reviews for a specific dish.
         """
         sql_file = QUERY_PATH / "list_by_dish.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"dish_id": dish_id})
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"dish_id": dish_id})
+            rows = await cur.fetchall()
 
             return [
                 ReviewResponse(
@@ -106,34 +106,27 @@ class ReviewRepository:
                 for row in rows
             ]
 
-    def delete_review(self, review_id: int) -> bool:
+    async def delete_review(self, review_id: int) -> bool:
         sql_file = QUERY_PATH / "delete.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"id": review_id})
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"id": review_id})
             deleted = cur.rowcount
-            self.conn.commit()
+            await self.conn.commit()
             return deleted > 0
 
-    def update_review(
+    async def update_review(
         self, review_id: int, review_update: ReviewUpdate
     ) -> Optional[ReviewResponse]:
         """
         Updates an existing review's rating or comment.
-
-        Args:
-            review_id (int): ID of the review to update.
-            review_update (ReviewUpdate): Fields to update.
-
-        Returns:
-            Optional[ReviewResponse]: The updated review or None if not found.
         """
         sql_update = (QUERY_PATH / "update.sql").read_text()
         sql_details = (QUERY_PATH / "get_details.sql").read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             try:
-                cur.execute(
+                await cur.execute(
                     sql_update,
                     {
                         "rating": review_update.nota,
@@ -141,13 +134,13 @@ class ReviewRepository:
                         "review_id": review_id,
                     },
                 )
-                row_id = cur.fetchone()
+                row_id = await cur.fetchone()
                 if not row_id:
-                    self.conn.rollback()
+                    await self.conn.rollback()
                     return None
-                cur.execute(sql_details, {"review_id": review_id})
-                row = cur.fetchone()
-                self.conn.commit()
+                await cur.execute(sql_details, {"review_id": review_id})
+                row = await cur.fetchone()
+                await self.conn.commit()
                 if not row:
                     return None
                 return ReviewResponse(
@@ -160,6 +153,6 @@ class ReviewRepository:
                 )
 
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 logger.exception(f"Database error updating review {review_id}: {e}")
                 raise e

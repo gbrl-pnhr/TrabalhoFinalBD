@@ -16,16 +16,16 @@ class OrderRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def create_order(self, order: OrderCreate) -> int:
+    async def create_order(self, order: OrderCreate) -> int:
         """Creates a new order header and returns its ID."""
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(
                 f"Opening order for Customer {order.id_cliente} at Table {order.id_mesa}"
             )
-            cur.execute(
+            await cur.execute(
                 query,
                 {
                     "customer_id": order.id_cliente,
@@ -34,8 +34,8 @@ class OrderRepository:
                     "people_count": order.quantidade_cliente,
                 },
             )
-            row = cur.fetchone()
-            self.conn.commit()
+            row = await cur.fetchone()
+            await self.conn.commit()
             if not row:
                 raise Exception("Failed to create order")
             return row["id_pedido"]
@@ -67,36 +67,36 @@ class OrderRepository:
             itens=items_list,
         )
 
-    def get_order_details(self, order_id: int) -> Optional[OrderResponse]:
+    async def get_order_details(self, order_id: int) -> Optional[OrderResponse]:
         sql_file = QUERY_PATH / "get_details.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"order_id": order_id})
-            row = cur.fetchone()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"order_id": order_id})
+            row = await cur.fetchone()
             if not row:
                 return None
             return self._map_row_to_response(row)
 
-    def list_active_orders(self) -> List[OrderResponse]:
+    async def list_active_orders(self) -> List[OrderResponse]:
         sql_file = QUERY_PATH / "list_active.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
             return [self._map_row_to_response(row) for row in rows]
 
-    def update_order_total(self, order_id: int, new_total: Decimal):
+    async def update_order_total(self, order_id: int, new_total: Decimal):
         sql_file = QUERY_PATH / "update_total.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"total": new_total, "id": order_id})
-            self.conn.commit()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"total": new_total, "id": order_id})
+            await self.conn.commit()
 
-    def update_status(self, order_id: int, status: str):
+    async def update_status(self, order_id: int, status: str):
         sql_file = QUERY_PATH / "update_status.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"status": status, "id": order_id})
-            self.conn.commit()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"status": status, "id": order_id})
+            await self.conn.commit()

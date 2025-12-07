@@ -13,13 +13,13 @@ class ItemRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def add_item(self, order_id: int, item: OrderItemCreate):
+    async def add_item(self, order_id: int, item: OrderItemCreate):
         """Inserts an item into the database."""
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(
+        async with self.conn.cursor() as cur:
+            await cur.execute(
                 query,
                 {
                     "order_id": order_id,
@@ -28,25 +28,25 @@ class ItemRepository:
                     "notes": item.observacoes,
                 },
             )
-            self.conn.commit()
+            await self.conn.commit()
 
-    def remove_item(self, item_id: int):
+    async def remove_item(self, item_id: int):
         """Removes an item from the database."""
         sql_file = QUERY_PATH / "delete.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"item_id": item_id})
-            self.conn.commit()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"item_id": item_id})
+            await self.conn.commit()
 
-    def get_items_by_order(self, order_id: int) -> List[OrderItemResponse]:
+    async def get_items_by_order(self, order_id: int) -> List[OrderItemResponse]:
         """Fetches all items for a specific order with Dish details."""
         sql_file = QUERY_PATH / "get_by_order.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"order_id": order_id})
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"order_id": order_id})
+            rows = await cur.fetchall()
 
             items = []
             for row in rows:

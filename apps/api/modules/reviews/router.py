@@ -1,32 +1,29 @@
 import logging
 from typing import List
-from fastapi import APIRouter, HTTPException, status, Depends
-from apps.api.core.database import get_db_connection
+from fastapi import APIRouter, HTTPException, status, Depends, Request
 from packages.common.src.models.reviews_models import ReviewCreate, ReviewResponse, ReviewUpdate
 from apps.api.modules.reviews.repository import ReviewRepository
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 logger = logging.getLogger(__name__)
 
+async def get_db_connection(request: Request):
+    async with request.app.state.pool.connection() as conn:
+        yield conn
 
 def get_repository(conn=Depends(get_db_connection)):
     """Dependency injection for ReviewRepository."""
     return ReviewRepository(conn)
 
-
 @router.post("/", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
-def create_review(
+async def create_review(
     review: ReviewCreate, repo: ReviewRepository = Depends(get_repository)
 ):
     """
     Submit a review for a dish ordered by a customer.
-
-    Enforces:
-    1. Unique constraint: Customer + Order + Dish.
-    2. Eligibility: Customer must have ordered the item in that order.
     """
     try:
-        return repo.create_review(review)
+        return await repo.create_review(review)
     except ValueError as ve:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -53,9 +50,8 @@ def create_review(
             detail="Internal Server Error",
         )
 
-
 @router.patch("/{review_id}", response_model=ReviewResponse)
-def update_review(
+async def update_review(
     review_id: int,
     review_update: ReviewUpdate,
     repo: ReviewRepository = Depends(get_repository)
@@ -64,7 +60,7 @@ def update_review(
     Update the rating or comment of an existing review.
     """
     try:
-        updated_review = repo.update_review(review_id, review_update)
+        updated_review = await repo.update_review(review_id, review_update)
         if not updated_review:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -80,16 +76,15 @@ def update_review(
             detail="Internal Server Error"
         )
 
-
 @router.get("/dish/{dish_id}", response_model=List[ReviewResponse])
-def list_reviews_for_dish(
+async def list_reviews_for_dish(
     dish_id: int, repo: ReviewRepository = Depends(get_repository)
 ):
     """
     Get all reviews for a specific dish to analyze its popularity.
     """
     try:
-        return repo.get_reviews_by_dish(dish_id)
+        return await repo.get_reviews_by_dish(dish_id)
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -100,10 +95,10 @@ def list_reviews_for_dish(
         )
 
 @router.delete("/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_review(review_id: int, repo: ReviewRepository = Depends(get_repository)):
+async def delete_review(review_id: int, repo: ReviewRepository = Depends(get_repository)):
     """Delete a specific review."""
     try:
-        success = repo.delete_review(review_id)
+        success = await repo.delete_review(review_id)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

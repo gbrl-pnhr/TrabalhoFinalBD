@@ -14,26 +14,26 @@ class TableRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def delete_table(self, table_id: int) -> bool:
+    async def delete_table(self, table_id: int) -> bool:
         sql_file = QUERY_PATH / "delete.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"id": table_id})
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"id": table_id})
             deleted = cur.rowcount
-            self.conn.commit()
+            await self.conn.commit()
             return deleted > 0
 
-    def create_table(self, table: TableCreate) -> TableResponse:
+    async def create_table(self, table: TableCreate) -> TableResponse:
         """
         Register a new table in the database.
         """
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(f"Creating table #{table.numero} at {table.localizacao}")
             try:
-                cur.execute(
+                await cur.execute(
                     query,
                     {
                         "number": table.numero,
@@ -41,8 +41,8 @@ class TableRepository:
                         "location": table.localizacao,
                     },
                 )
-                row = cur.fetchone()
-                self.conn.commit()
+                row = await cur.fetchone()
+                await self.conn.commit()
 
                 if not row:
                     raise Exception("Failed to insert table")
@@ -55,20 +55,20 @@ class TableRepository:
                     eh_ocupada=False
                 )
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 logger.error(f"Error creating table: {e}")
                 raise e
 
-    def get_all_tables(self) -> List[TableResponse]:
+    async def get_all_tables(self) -> List[TableResponse]:
         """
         Fetch all tables with occupancy status.
         """
         sql_file = QUERY_PATH / "list.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
 
             return [
                 TableResponse(
@@ -81,14 +81,14 @@ class TableRepository:
                 for row in rows
             ]
 
-    def get_table_by_id(self, table_id: int) -> Optional[TableResponse]:
+    async def get_table_by_id(self, table_id: int) -> Optional[TableResponse]:
         """Fetch a specific table by ID."""
         sql_file = QUERY_PATH / "get_by_id.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"id": table_id})
-            row = cur.fetchone()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"id": table_id})
+            row = await cur.fetchone()
 
             if not row:
                 return None

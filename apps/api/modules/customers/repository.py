@@ -15,17 +15,17 @@ class CustomerRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def create_customer(self, customer: CustomerCreate) -> CustomerResponse:
+    async def create_customer(self, customer: CustomerCreate) -> CustomerResponse:
         """
         Register a new customer in the database.
         """
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(f"Creating customer: {customer.nome}")
             try:
-                cur.execute(
+                await cur.execute(
                     query,
                     {
                         "name": customer.nome,
@@ -33,8 +33,8 @@ class CustomerRepository:
                         "email": customer.email,
                     },
                 )
-                row = cur.fetchone()
-                self.conn.commit()
+                row = await cur.fetchone()
+                await self.conn.commit()
 
                 if not row:
                     raise Exception("Failed to insert customer")
@@ -47,19 +47,19 @@ class CustomerRepository:
                     pedidos=[],
                 )
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 logger.error(f"Error creating customer: {e}")
                 raise e
 
-    def get_all_customers(self) -> List[CustomerResponse]:
+    async def get_all_customers(self) -> List[CustomerResponse]:
         """
         Fetch all registered customers with their full order history.
         """
         sql_file = QUERY_PATH / "list_populated.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
             results = []
             for row in rows:
                 orders_data = row["pedidos"]

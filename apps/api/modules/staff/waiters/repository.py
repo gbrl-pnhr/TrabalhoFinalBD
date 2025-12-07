@@ -12,24 +12,24 @@ class WaiterRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def delete_waiter(self, waiter_id: int) -> bool:
+    async def delete_waiter(self, waiter_id: int) -> bool:
         sql_file = QUERY_PATH / "delete.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"id": waiter_id})
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"id": waiter_id})
             deleted = cur.rowcount
-            self.conn.commit()
+            await self.conn.commit()
             return deleted > 0
 
-    def create_waiter(self, waiter: WaiterCreate) -> WaiterResponse:
+    async def create_waiter(self, waiter: WaiterCreate) -> WaiterResponse:
         """Register a new waiter."""
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(f"Creating waiter: {waiter.nome}")
             try:
-                cur.execute(
+                await cur.execute(
                     query,
                     {
                         "name": waiter.nome,
@@ -39,8 +39,8 @@ class WaiterRepository:
                         "commission": waiter.comissao,
                     },
                 )
-                row = cur.fetchone()
-                self.conn.commit()
+                row = await cur.fetchone()
+                await self.conn.commit()
 
                 if not row:
                     raise Exception("Failed to insert waiter")
@@ -54,17 +54,17 @@ class WaiterRepository:
                     comissao=row["comissao"],
                 )
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 logger.error(f"Error creating waiter: {e}")
                 raise e
 
-    def get_all_waiters(self) -> List[WaiterResponse]:
+    async def get_all_waiters(self) -> List[WaiterResponse]:
         """Fetch all waiters."""
         query = "SELECT id_funcionario, nome, cpf, salario, turno, comissao FROM garcom ORDER BY nome;"
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
 
             return [
                 WaiterResponse(

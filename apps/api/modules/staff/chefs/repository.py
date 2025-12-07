@@ -13,24 +13,24 @@ class ChefRepository:
         self.conn = db_connection
 
 
-    def delete_chef(self, waiter_id: int) -> bool:
+    async def delete_chef(self, waiter_id: int) -> bool:
         sql_file = QUERY_PATH / "delete.sql"
         query = sql_file.read_text()
-        with self.conn.cursor() as cur:
-            cur.execute(query, {"id": waiter_id})
+        async with self.conn.cursor() as cur:
+            await cur.execute(query, {"id": waiter_id})
             deleted = cur.rowcount
-            self.conn.commit()
+            await self.conn.commit()
             return deleted > 0
 
-    def create_chef(self, chef: ChefCreate) -> ChefResponse:
+    async def create_chef(self, chef: ChefCreate) -> ChefResponse:
         """Register a new chef."""
         sql_file = QUERY_PATH / "create.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
+        async with self.conn.cursor() as cur:
             logger.info(f"Creating chef: {chef.nome}")
             try:
-                cur.execute(
+                await cur.execute(
                     query,
                     {
                         "name": chef.nome,
@@ -39,8 +39,8 @@ class ChefRepository:
                         "specialty": chef.especialidade,
                     },
                 )
-                row = cur.fetchone()
-                self.conn.commit()
+                row = await cur.fetchone()
+                await self.conn.commit()
 
                 if not row:
                     raise Exception("Failed to insert chef")
@@ -53,17 +53,17 @@ class ChefRepository:
                     especialidade=row["especialidade"],
                 )
             except Exception as e:
-                self.conn.rollback()
+                await self.conn.rollback()
                 logger.error(f"Error creating chef: {e}")
                 raise e
 
-    def get_all_chefs(self) -> List[ChefResponse]:
+    async def get_all_chefs(self) -> List[ChefResponse]:
         """Fetch all chefs."""
         query = "SELECT id_funcionario, nome, cpf, salario, especialidade FROM cozinheiro ORDER BY nome;"
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
 
             return [
                 ChefResponse(

@@ -28,11 +28,11 @@ class StateFastAPI(FastAPI):
 @asynccontextmanager
 async def lifespan(application: StateFastAPI):
     logger.info("Application starting up...")
-    application.state.pool = create_db_pool()
+    application.state.pool = await create_db_pool()
     yield
     logger.info("Application shutting down...")
     if hasattr(application.state, "pool"):
-        application.state.pool.close()
+        await application.state.pool.close()
         logger.info("Database connection pool closed.")
 
 app = FastAPI(

@@ -20,7 +20,7 @@ class AnalyticsRepository:
     def __init__(self, db_connection):
         self.conn = db_connection
 
-    def get_daily_revenue(self) -> List[DailyRevenue]:
+    async def get_daily_revenue(self) -> List[DailyRevenue]:
         """
         Fetches revenue aggregated by day for the last 30 days.
 
@@ -30,9 +30,9 @@ class AnalyticsRepository:
         sql_file = QUERY_PATH / "get_daily_revenue.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
             return [
                 DailyRevenue(
                     data=row["data"],
@@ -42,7 +42,7 @@ class AnalyticsRepository:
                 for row in rows
             ]
 
-    def get_top_dishes(self) -> List[DishPopularity]:
+    async def get_top_dishes(self) -> List[DishPopularity]:
         """
         Fetches top 10 selling dishes.
 
@@ -52,9 +52,9 @@ class AnalyticsRepository:
         sql_file = QUERY_PATH / "get_top_dishes.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
             return [
                 DishPopularity(
                     nome_prato=row["nome_prato"],
@@ -65,7 +65,7 @@ class AnalyticsRepository:
                 for row in rows
             ]
 
-    def get_waiter_performance(self) -> List[WaiterPerformance]:
+    async def get_waiter_performance(self) -> List[WaiterPerformance]:
         """
         Fetches sales performance per waiter.
 
@@ -75,9 +75,9 @@ class AnalyticsRepository:
         sql_file = QUERY_PATH / "get_waiter_performance.sql"
         query = sql_file.read_text()
 
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            rows = cur.fetchall()
+        async with self.conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
             return [
                 WaiterPerformance(
                     nome_garcom=row["nome_garcom"],
