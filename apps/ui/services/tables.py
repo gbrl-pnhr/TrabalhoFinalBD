@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import streamlit as st
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
 from typing import List
@@ -10,16 +11,17 @@ class TableService:
     def __init__(self):
         self.client = APIClient()
 
+    @st.cache_data(ttl=300, show_spinner=False)
     def get_tables(self) -> List[TableResponse]:
-        """Fetch all tables."""
+        """Fetch all tables. Cached for 5 minutes."""
         data = self.client.get("/tables/")
         return [TableResponse.model_validate(t) for t in data]
 
     def create_table(self, table: TableCreate) -> TableResponse:
-        """Register a new table."""
         data = self.client.post("/tables/", table.model_dump())
+        self.get_tables.clear()
         return TableResponse.model_validate(data)
 
     def delete_table(self, table_id: int) -> None:
-        """Remove a table from the layout."""
         self.client.delete(f"/tables/{table_id}")
+        self.get_tables.clear()

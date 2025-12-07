@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import streamlit as st
 project_root = Path(__file__).resolve().parents[2]
 sys.path.append(str(project_root))
 import logging
@@ -12,20 +13,17 @@ logger = logging.getLogger("frontend.services.system")
 
 class SystemService:
     """
-    Service layer for system-level operations (Health checks, Versioning, etc).
-    Adheres to SRP by separating infrastructure checks from business logic.
+    Service layer for system-level operations.
     """
 
     def __init__(self):
         self.client = APIClient()
 
+    @st.cache_data(ttl=30, show_spinner=False)
     def get_health_status(self) -> Optional[Dict[str, Any]]:
         """
         Queries the backend health check endpoint.
-
-        Returns:
-            Optional[Dict[str, Any]]: The health payload (e.g. {"status": "ok"})
-            if successful, None if the connection fails.
+        Cached to prevent flickering on every rerun.
         """
         try:
             return self.client.get("/health")

@@ -6,9 +6,11 @@ sys.path.append(str(project_root))
 from apps.ui.services.system import SystemService
 
 
-@st.cache_data(ttl=30, show_spinner=False)
 def get_api_status() -> bool:
-    """Checks API health."""
+    """
+    Checks API health.
+    Uses SystemService which is now internally cached.
+    """
     service = SystemService()
     try:
         data = service.get_health_status()
