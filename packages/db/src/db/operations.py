@@ -1,14 +1,15 @@
-import os
 import random
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from datetime import datetime, timedelta
+from pathlib import Path
 from faker import Faker
 from yoyo import read_migrations, get_backend
 
 from .config import logger, settings
 
-OUTPUT_DIR = "seeds"
+SEEDS_DIR = Path(__file__).resolve().parents[2] / "seeds"
+
 START_DATE = datetime(2025, 11, 1)
 END_DATE = datetime(2025, 12, 5)
 MENU_ITEMS = {
@@ -42,31 +43,31 @@ fake = Faker("pt_BR")
 Faker.seed(42)
 random.seed(42)
 
-def ensure_dir(directory: str) -> None:
-    if not os.path.exists(directory):
-        os.makedirs(directory)
 
 def escape_sql_string(val: str) -> str:
     return str(val).replace("'", "''")
 
-def generate_001_infrastructure(output_dir: str):
-    filepath = os.path.join(output_dir, "001_seed_infrastructure.sql")
-    print(f"Generating {filepath}...")
+
+def generate_001_infrastructure(output_dir: Path):
+    filepath = output_dir / "001_seed_infrastructure.sql"
+    logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 002_seed_infrastructure.sql\n")
+        f.write("-- 001_seed_infrastructure.sql\n")
         f.write("-- Tables (Mesa), Staff (Garcom/Cozinheiro), and Menu (Prato)\n\n")
-        f.write("-- Mesa\n")
-        f.write(
-            "INSERT INTO mesa (id_mesa, numero, capacidade, localizacao) VALUES\n"
-        )
+
+        # Added TRUNCATE to clean tables before seeding
+        f.write("TRUNCATE TABLE mesa, garcom, cozinheiro, prato CASCADE;\n\n")
+
+        f.write("INSERT INTO mesa (id_mesa, numero, capacidade, localizacao) VALUES\n")
         rows = []
         for i in range(1, TABLE_COUNT + 1):
             cap = random.choice([2, 4, 6, 8])
             loc = random.choice(["Interna", "Externa", "Varanda"])
             rows.append(f"({i}, {i}, {cap}, '{loc}')")
         f.write(",\n".join(rows) + ";\n\n")
-        f.write("-- Garcom\n")
-        f.write("INSERT INTO garcom (id_funcionario, nome, cpf, salario, turno, comissao) VALUES\n")
+        f.write(
+            "INSERT INTO garcom (id_funcionario, nome, cpf, salario, turno, comissao) VALUES\n"
+        )
         w_rows = []
         for i in range(1, STAFF_COUNT_WAITERS + 1):
             name = escape_sql_string(fake.name())
@@ -76,8 +77,9 @@ def generate_001_infrastructure(output_dir: str):
             comissao = 5.00
             w_rows.append(f"({i}, '{name}', '{cpf}', {salario}, '{turno}', {comissao})")
         f.write(",\n".join(w_rows) + ";\n\n")
-        f.write("-- Cozinheiro\n")
-        f.write("INSERT INTO cozinheiro (id_funcionario, nome, cpf, salario, especialidade) VALUES\n")
+        f.write(
+            "INSERT INTO cozinheiro (id_funcionario, nome, cpf, salario, especialidade) VALUES\n"
+        )
         c_rows = []
         for i in range(1, STAFF_COUNT_CHEFS + 1):
             name = escape_sql_string(fake.name())
@@ -86,22 +88,22 @@ def generate_001_infrastructure(output_dir: str):
             spec = random.choice(["Massas", "Grelhados", "Sobremesas"])
             c_rows.append(f"({i}, '{name}', '{cpf}', {salario}, '{spec}')")
         f.write(",\n".join(c_rows) + ";\n\n")
-        f.write("-- Prato\n")
-        f.write(
-            "INSERT INTO prato (id_prato, nome, preco, categoria) VALUES\n"
-        )
+        f.write("INSERT INTO prato (id_prato, nome, preco, categoria) VALUES\n")
         d_rows = []
         for d_id, (name, price, cat) in MENU_ITEMS.items():
-            d_rows.append(
-                f"({d_id}, '{escape_sql_string(name)}', {price}, '{cat}')"
-            )
+            d_rows.append(f"({d_id}, '{escape_sql_string(name)}', {price}, '{cat}')")
         f.write(",\n".join(d_rows) + ";\n\n")
 
-def generate_002_customers(output_dir: str):
-    filepath = os.path.join(output_dir, "002_seed_customers.sql")
-    print(f"Generating {filepath}...")
+
+def generate_002_customers(output_dir: Path):
+    filepath = output_dir / "002_seed_customers.sql"
+    logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 003_seed_customers.sql\n\n")
+        f.write("-- 002_seed_customers.sql\n\n")
+
+        # Added TRUNCATE
+        f.write("TRUNCATE TABLE cliente CASCADE;\n\n")
+
         f.write("INSERT INTO cliente (id_cliente, nome, telefone, email) VALUES\n")
         rows = []
         for i in range(1, CUSTOMER_COUNT + 1):
@@ -111,17 +113,18 @@ def generate_002_customers(output_dir: str):
             rows.append(f"({i}, '{name}', '{phone}', '{email}')")
         f.write(",\n".join(rows) + ";\n")
 
-def generate_003_orders(output_dir: str, orders_list):
-    """
-    Generates orders and order items.
-    Populates orders_list with dicts for review generation.
-    """
-    filepath = os.path.join(output_dir, "003_seed_orders.sql")
-    print(f"Generating {filepath}...")
+
+def generate_003_orders(output_dir: Path, orders_list: list):
+    filepath = output_dir / "003_seed_orders.sql"
+    logger.debug(f"Generating {filepath.name}...")
     current_order_id = 1000
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 004_seed_orders.sql\n")
+        f.write("-- 003_seed_orders.sql\n")
         f.write("-- Pedido and Item_Pedido\n\n")
+
+        # Added TRUNCATE
+        f.write("TRUNCATE TABLE pedido, item_pedido CASCADE;\n\n")
+
         curr_date = START_DATE
         while curr_date <= END_DATE:
             is_weekend = curr_date.weekday() >= 4
@@ -145,9 +148,8 @@ def generate_003_orders(output_dir: str, orders_list):
                     "%Y-%m-%d %H:%M:%S"
                 )
                 status = "CLOSED"
-                if curr_date.date() == END_DATE.date():
-                    if random.random() < 0.3:
-                        status = "OPEN"
+                if curr_date.date() == END_DATE.date() and random.random() < 0.3:
+                    status = "OPEN"
                 num_items = random.randint(1, 5)
                 selected_dishes = random.choices(list(MENU_ITEMS.keys()), k=num_items)
                 total_amount = 0.0
@@ -183,15 +185,22 @@ def generate_003_orders(output_dir: str, orders_list):
                 f.write(",\n".join(day_items_sql) + ";\n\n")
             curr_date += timedelta(days=1)
 
-def generate_004_reviews(output_dir: str, orders_list):
-    filepath = os.path.join(output_dir, "004_seed_reviews.sql")
-    print(f"Generating {filepath}...")
+
+def generate_004_reviews(output_dir: Path, orders_list: list):
+    filepath = output_dir / "004_seed_reviews.sql"
+    logger.debug(f"Generating {filepath.name}...")
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 005_seed_reviews.sql\n\n")
+        f.write("-- 004_seed_reviews.sql\n\n")
+
+        # Added TRUNCATE
+        f.write("TRUNCATE TABLE avaliacao CASCADE;\n\n")
+
         f.write(
             "INSERT INTO avaliacao (id_cliente, id_prato, id_pedido, nota, comentario) VALUES\n"
         )
         review_rows = []
+        if not orders_list:
+            return
         orders_to_review = random.sample(orders_list, k=int(len(orders_list) * 0.7))
         for order in orders_to_review:
             if not order["items"]:
@@ -218,13 +227,16 @@ def generate_004_reviews(output_dir: str, orders_list):
             review_rows.append(
                 f"({order['customer_id']}, {dish_id}, {order['id']}, {rating}, '{comment}')"
             )
-        f.write(",\n".join(review_rows) + ";\n")
+        if review_rows:
+            f.write(",\n".join(review_rows) + ";\n")
 
-def generate_005_reset_sequences(output_dir: str):
-    filepath = os.path.join(output_dir, "005_reset_sequences.sql")
-    print(f"Generating {filepath}...")
+
+def generate_005_reset_sequences(output_dir: Path):
+    filepath = output_dir / "005_reset_sequences.sql"
+    logger.debug(f"Generating {filepath.name}...")
+
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write("-- 006_reset_sequences.sql\n")
+        f.write("-- 005_reset_sequences.sql\n")
         f.write("-- Reset auto-increment sequences after manual ID insertion\n\n")
         tables_to_reset = [
             ("cliente", "id_cliente"),
@@ -239,16 +251,18 @@ def generate_005_reset_sequences(output_dir: str):
                 f"SELECT setval(pg_get_serial_sequence('{table}', '{col}'), (SELECT MAX({col}) FROM {table}));\n"
             )
         f.write(
-            f"SELECT setval(pg_get_serial_sequence('item_pedido', 'id_item_pedido'), (SELECT MAX(id_item_pedido) FROM item_pedido));\n"
+            "SELECT setval(pg_get_serial_sequence('item_pedido', 'id_item_pedido'), (SELECT MAX(id_item_pedido) FROM item_pedido));\n"
         )
         f.write(
-            f"SELECT setval(pg_get_serial_sequence('avaliacao', 'id_avaliacao'), (SELECT MAX(id_avaliacao) FROM avaliacao));\n"
+            "SELECT setval(pg_get_serial_sequence('avaliacao', 'id_avaliacao'), (SELECT MAX(id_avaliacao) FROM avaliacao));\n"
         )
 
+
 def generate_seeds() -> None:
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), OUTPUT_DIR))
-    ensure_dir(output_dir)
+    output_dir = SEEDS_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
     orders_list = []
+    logger.info(f"Generating seeds in: {output_dir}")
     generate_001_infrastructure(output_dir)
     generate_002_customers(output_dir)
     generate_003_orders(output_dir, orders_list)
@@ -256,26 +270,22 @@ def generate_seeds() -> None:
     generate_005_reset_sequences(output_dir)
     logger.info("Seed files generated successfully.")
 
+
 def create_database_if_not_exists() -> None:
-    env = {
-        "user": os.getenv("DB_USER"),
-        "password": os.getenv("DB_PASSWORD"),
-        "host": os.getenv("DB_HOST"),
-        "port": os.getenv("DB_PORT"),
-        "dbname": os.getenv("DB_NAME"),
-    }
-    target_db_name = env["dbname"]
+    target_db_name = settings.DB_NAME
     try:
         conn = psycopg2.connect(
-            user=env["user"],
-            password=env["password"],
-            host=env["host"],
-            port=env["port"],
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
             database="postgres",
         )
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s", (target_db_name,))
+        cursor.execute(
+            "SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s", (target_db_name,)
+        )
         exists = cursor.fetchone()
         if not exists:
             logger.info(f"Database '{target_db_name}' does not exist. Creating it...")
@@ -286,7 +296,8 @@ def create_database_if_not_exists() -> None:
         cursor.close()
         conn.close()
     except Exception as e:
-        logger.warning(f"Could not create database: {e}")
+        logger.warning(f"Could not create database (check permissions): {e}")
+
 
 def apply_migrations() -> None:
     create_database_if_not_exists()
@@ -294,8 +305,11 @@ def apply_migrations() -> None:
     db_url = settings.database_url
     try:
         backend = get_backend(db_url)
-        migrations_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "migrations"))
-        migrations = read_migrations(migrations_dir)
+        migrations_dir = Path(__file__).resolve().parents[2] / "migrations"
+        if not migrations_dir.exists():
+            logger.error(f"Migrations directory not found at: {migrations_dir}")
+            return
+        migrations = read_migrations(str(migrations_dir))
         to_apply = backend.to_apply(migrations)
         if not to_apply:
             logger.info("Database is already up to date.")
@@ -307,17 +321,20 @@ def apply_migrations() -> None:
         logger.error(f"Migration failed: {e}")
         raise
 
+
 def reset_database() -> None:
     logger.info("Starting database reset process...")
     db_url = settings.database_url
     try:
         backend = get_backend(db_url)
-        migrations_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "migrations"))
-        migrations = read_migrations(migrations_dir)
+        migrations_dir = Path(__file__).resolve().parents[2] / "migrations"
+        migrations = read_migrations(str(migrations_dir))
         logger.info("Checking for applied migrations to rollback...")
         to_rollback = backend.to_rollback(migrations)
         if to_rollback:
-            logger.info(f"Rolling back {len(to_rollback)} migrations. This will destroy data.")
+            logger.info(
+                f"Rolling back {len(to_rollback)} migrations. This will destroy data."
+            )
             backend.rollback_migrations(to_rollback)
             logger.info("Rollback complete.")
         else:
@@ -329,19 +346,21 @@ def reset_database() -> None:
             logger.info(f"Applied {len(to_apply)} migrations successfully.")
         else:
             logger.info("No migrations to apply.")
+
         logger.info("Database reset successfully.")
     except Exception as e:
         logger.error(f"Database reset failed: {e}")
         raise
 
+
 def get_db_connection() -> psycopg2.extensions.connection:
     try:
         conn = psycopg2.connect(
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT"),
-            dbname=os.getenv("DB_NAME"),
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+            dbname=settings.DB_NAME,
         )
         conn.autocommit = False
         return conn
@@ -349,14 +368,14 @@ def get_db_connection() -> psycopg2.extensions.connection:
         logger.critical(f"Failed to connect to DB: {e}")
         raise
 
+
 def apply_seeds() -> None:
-    filename = ""
-    seed_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "seeds"))
-    if not os.path.exists(seed_dir):
+    seed_dir = SEEDS_DIR
+    if not seed_dir.exists():
         logger.error(f"Seed directory not found: {seed_dir}")
         logger.error("Run generate_seeds first.")
         raise ValueError("Seed directory missing")
-    files = sorted([f for f in os.listdir(seed_dir) if f.endswith(".sql")])
+    files = sorted([f for f in seed_dir.glob("*.sql")])
     if not files:
         logger.warning("No .sql files found in seeds directory.")
         return
@@ -364,18 +383,16 @@ def apply_seeds() -> None:
     cursor = conn.cursor()
     logger.info(f"Found {len(files)} seed files. Starting application...")
     try:
-        for filename in files:
-            file_path = os.path.join(seed_dir, filename)
-            logger.info(f"Executing {filename}...")
-            with open(file_path, "r", encoding="utf-8") as f:
-                sql_content = f.read()
+        for filepath in files:
+            logger.info(f"Executing {filepath.name}...")
+            sql_content = filepath.read_text(encoding="utf-8")
             if sql_content.strip():
                 cursor.execute(sql_content)
         conn.commit()
         logger.info("All seeds applied successfully!")
     except Exception as e:
         conn.rollback()
-        logger.error(f"Error applying seed {filename}: {e}")
+        logger.error(f"Error applying seed {filepath.name}: {e}")
         raise
     finally:
         cursor.close()

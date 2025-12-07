@@ -2,7 +2,12 @@ import typer
 import sys
 
 from packages.common.src.log_config import setup_logging
-from .operations import apply_migrations, reset_database, generate_seeds, apply_seeds
+from .operations import (
+    apply_migrations,
+    reset_database,
+    generate_seeds as generate_seeds_op,
+    apply_seeds as apply_seeds_op
+)
 from .config import logger
 
 app = typer.Typer(help="Database management CLI for TrabalhoFinalBD")
@@ -34,7 +39,7 @@ def reset(force: bool = False):
 def generate_seeds():
     """Generate seed SQL files."""
     try:
-        generate_seeds()
+        generate_seeds_op()
     except Exception as e:
         logger.error(f"Seed generation failed: {e}")
         sys.exit(1)
@@ -43,7 +48,7 @@ def generate_seeds():
 def seed():
     """Apply generated seed SQL files."""
     try:
-        apply_seeds()
+        apply_seeds_op()
     except Exception as e:
         logger.error(f"Seeding failed: {e}")
         sys.exit(1)

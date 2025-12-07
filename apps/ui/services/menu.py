@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import DishResponse, DishCreate, DishUpdate
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import DishResponse, DishCreate, DishUpdate
 
 class MenuService:
     """

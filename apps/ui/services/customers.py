@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import CustomerResponse, CustomerCreate
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import CustomerResponse, CustomerCreate
 
 class CustomerService:
     def __init__(self):

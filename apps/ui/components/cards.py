@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from apps.ui.schemas import OrderResponse
+
+from apps.api.modules import OrderResponse
 
 
 def render_order_details(order: OrderResponse):

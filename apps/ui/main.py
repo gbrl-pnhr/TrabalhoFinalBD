@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
 import streamlit as st
-ROOT_PATH = Path(__file__).parent
-sys.path.append(str(ROOT_PATH))
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from components.sidebar import render_global_sidebar
 
 st.set_page_config(

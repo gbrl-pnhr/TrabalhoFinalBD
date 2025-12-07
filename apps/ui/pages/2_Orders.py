@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import time
+
+from apps.api.modules import OrderItemCreate, OrderCreate
 from apps.ui.services.order import OrderService
 from apps.ui.services.customers import CustomerService
 from apps.ui.services.tables import TableService
@@ -8,7 +10,6 @@ from apps.ui.services.staff import StaffService
 from apps.ui.components.cards import render_order_details
 from apps.ui.components.forms import render_add_item_form, render_open_order_form
 from apps.ui.utils.exceptions import AppError
-from apps.ui.schemas import OrderCreate, OrderItemCreate
 
 order_service = OrderService()
 customer_service = CustomerService()

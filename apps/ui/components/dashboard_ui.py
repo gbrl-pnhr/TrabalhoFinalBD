@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from typing import List
-from apps.ui.schemas import DailyRevenue, DishPopularity, WaiterPerformance
+
+from apps.api.modules import DailyRevenue, DishPopularity, WaiterPerformance
 
 
 def render_kpi_metrics(total_revenue: float, avg_revenue: float, data_points: int):

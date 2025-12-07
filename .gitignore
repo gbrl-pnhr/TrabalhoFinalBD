@@ -163,5 +163,5 @@ cython_debug/
 .idea/*
 
 ignore/*
-
+.turbo/*
 node_modules/*

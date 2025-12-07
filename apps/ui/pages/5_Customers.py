@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+
+from apps.api.modules import CustomerCreate
 from apps.ui.services.customers import CustomerService
-from apps.ui.schemas import CustomerCreate
 from apps.ui.utils.exceptions import AppError
 
 customer_service = CustomerService()

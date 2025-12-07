@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import WaiterResponse, WaiterCreate, ChefResponse, ChefCreate
 
 class StaffService:
     """

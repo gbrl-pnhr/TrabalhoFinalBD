@@ -1,11 +1,15 @@
 import logging
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apps.api.core.config import settings
-from apps.api.core.database import create_pool
+from db.config import settings
+from db.connection import create_db_pool
+
+project_root = Path(__file__).resolve().parents[2]
+sys.path.append(str(project_root))
 from apps.api.modules.menu.router import router as menu_router
 from apps.api.modules.customers.router import router as customer_router
 from apps.api.modules.tables.router import router as table_router
@@ -24,7 +28,7 @@ class StateFastAPI(FastAPI):
 @asynccontextmanager
 async def lifespan(application: StateFastAPI):
     logger.info("Application starting up...")
-    application.state.pool = create_pool()
+    application.state.pool = create_db_pool()
     yield
     logger.info("Application shutting down...")
     if hasattr(application.state, "pool"):
@@ -33,7 +37,7 @@ async def lifespan(application: StateFastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"/api/v1/openapi.json",
     lifespan=lifespan,
 )
 
@@ -45,13 +49,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(menu_router, prefix=settings.API_V1_STR)
-app.include_router(customer_router, prefix=settings.API_V1_STR)
-app.include_router(table_router, prefix=settings.API_V1_STR)
-app.include_router(staff_router, prefix=settings.API_V1_STR)
-app.include_router(order_router, prefix=settings.API_V1_STR)
-app.include_router(review_router, prefix=settings.API_V1_STR)
-app.include_router(analytics_router, prefix=settings.API_V1_STR)
+app.include_router(menu_router, prefix="/api/v1")
+app.include_router(customer_router, prefix="/api/v1")
+app.include_router(table_router, prefix="/api/v1")
+app.include_router(staff_router, prefix="/api/v1")
+app.include_router(order_router, prefix="/api/v1")
+app.include_router(review_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1")
 
 @app.get("/health")
 def health_check():
@@ -59,4 +63,4 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("apps.api.main:app", host="0.0.0.0", port=8000, reload=True)

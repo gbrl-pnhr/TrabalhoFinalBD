@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import OrderCreate, OrderResponse, OrderItemCreate
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import OrderResponse, OrderCreate, OrderItemCreate
 
 class OrderService:
     """

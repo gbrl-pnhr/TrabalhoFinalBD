@@ -1,6 +1,8 @@
 from typing import List, Tuple
 import pandas as pd
-from apps.ui.schemas import DailyRevenue
+
+from apps.api.modules import DailyRevenue
+
 
 def calculate_revenue_metrics(
     revenue_data: List[DailyRevenue],

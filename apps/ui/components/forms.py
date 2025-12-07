@@ -20,7 +20,7 @@ def render_add_item_form(
                 "Qty", min_value=1, step=1, value=1, key=f"q_{order_id}"
             )
         with c3:
-            st.write("")  # Spacer
+            st.write("")
             submit = st.form_submit_button("Add")
 
         if submit:

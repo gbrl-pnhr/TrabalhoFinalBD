@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import ReviewResponse, ReviewCreate
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import ReviewResponse, ReviewCreate, ReviewUpdate
 
 class ReviewService:
     def __init__(self):

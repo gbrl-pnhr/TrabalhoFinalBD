@@ -1,7 +1,8 @@
 import streamlit as st
 import time
+
+from apps.api.modules import WaiterCreate, ChefCreate
 from apps.ui.services.staff import StaffService
-from apps.ui.schemas import WaiterCreate, ChefCreate
 from apps.ui.utils.exceptions import AppError
 
 staff_service = StaffService()

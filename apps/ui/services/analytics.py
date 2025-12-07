@@ -1,6 +1,7 @@
 from typing import List
+
+from apps.api.modules import DailyRevenue, DishPopularity, WaiterPerformance
 from apps.ui.services.api_client import APIClient
-from apps.ui.schemas import DailyRevenue, DishPopularity, WaiterPerformance
 
 class AnalyticsService:
     """

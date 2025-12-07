@@ -7,8 +7,12 @@ class DBSettings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
     DB_HOST: str
-    DB_PORT: int = 5432
+    DB_PORT: int
     DB_NAME: str
+    API_BASE_URL: str
+    API_TIMEOUT: int
+    PAGE_TITLE: str
+    PROJECT_NAME: str
 
     @property
     def database_url(self) -> str:

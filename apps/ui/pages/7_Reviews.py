@@ -1,10 +1,11 @@
 import streamlit as st
 import time
+
+from apps.api.modules import ReviewUpdate, ReviewCreate
 from apps.ui.services.reviews import ReviewService
 from apps.ui.services.menu import MenuService
 from apps.ui.services.customers import CustomerService
 from apps.ui.services.order import OrderService
-from apps.ui.schemas import ReviewCreate, ReviewUpdate
 from apps.ui.utils.exceptions import AppError
 
 review_service = ReviewService()
@@ -139,7 +140,7 @@ with tab_write:
                             for item in selected_order.items
                         }
                         wiz_dish_id = st.selectbox(
-                            "Select Dish from Order",
+                            "Select Dish from pedido",
                             options=item_map.keys(),
                             format_func=lambda x: item_map.get(x),
                             key="wiz_dish",

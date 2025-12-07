@@ -1,6 +1,17 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "DB_USER",
+    "DB_PASSWORD",
+    "DB_NAME",
+    "DB_HOST",
+    "DB_PORT",
+    "API_BASE_URL",
+    "API_TIMEOUT",
+    "PAGE_TITLE",
+    "PROJECT_NAME"
+  ],
   "ui": "tui",
   "tasks": {
     "dev": {

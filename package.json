@@ -1,10 +1,16 @@
 {
   "name": "trabalhofinalbd",
   "private": true,
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "turbo dev",
-    "dev:api": "turbo dev --filter=api",
-    "dev:ui": "turbo dev --filter=ui",
+    "start": "dotenv -e .env -- turbo dev",
+    "dev": "dotenv -e .env -- turbo dev",
+    "dev:api": "dotenv -e .env -- turbo dev --filter=api",
+    "dev:ui": "dotenv -e .env -- turbo dev --filter=ui",
     "format": "ruff format .",
     "lint": "ruff check .",
     "lint:fix": "ruff check --fix .",

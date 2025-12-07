@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+
+from apps.api.modules import TableCreate
 from apps.ui.services.tables import TableService
-from apps.ui.schemas import TableCreate
 from apps.ui.utils.exceptions import AppError
 
 table_service = TableService()
