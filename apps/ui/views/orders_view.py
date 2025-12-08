@@ -24,7 +24,7 @@ class OrdersView:
         if self.vm.last_error:
             st.error(f"Erro carregando pedidos: {self.vm.last_error}")
 
-        tab_list, tab_create = st.tabs(["Pedidos Ativos", "Nova Mesa Sendo Utilizada"])
+        tab_list, tab_create = st.tabs(["Pedidos Ativos", "Nova Pedido"])
 
         with tab_list:
             self._render_active_orders_tab()
@@ -230,14 +230,14 @@ class OrdersView:
             )
 
     def _render_create_order_tab(self):
-        st.subheader("Nova Mesa Sendo Utilizada")
+        st.subheader("Novo Pedido")
 
         options = self.vm.get_new_order_options()
         if self.vm.last_error:
             st.error(self.vm.last_error)
 
         with st.form("new_order_form"):
-            st.write("Adicione informações para adicionar uma nova mesa:")
+            st.write("Adicione informações para adicionar um novo pedido:")
             c1, c2 = st.columns(2)
             with c1:
                 st.selectbox(
@@ -277,7 +277,7 @@ class OrdersView:
 
             st.markdown("---")
             st.form_submit_button(
-                "Adicionar Mesa",
+                "Criar Pedido",
                 width="stretch",
                 on_click=self._handle_create_order,
                 disabled=not options.tables
