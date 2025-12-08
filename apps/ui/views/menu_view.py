@@ -13,16 +13,12 @@ class MenuView:
 
     def render(self):
         st.title("🍴 Gestor de Menu")
-
-        # Load Data
         self.vm.load_data()
         if self.vm.last_error:
             st.error(f"System Error: {self.vm.last_error}")
-
         tab_list, tab_create, tab_manage = st.tabs(
             ["Menu", "Adicionar Prato", "Alterar e Remover"]
         )
-
         with tab_list:
             self._render_list_tab()
 

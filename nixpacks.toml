@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "python311", "curl", "git"]
+
+[phases.install]
+cmds = [
+    "npm ci",
+    "curl -LsSf https://astral.sh/uv/install.sh | sh",
+    "source $HOME/.cargo/env && uv sync --frozen",
+]
+
+[phases.build]
+cmds = []
+
+[envs]
+UV_PROJECT_ENVIRONMENT = "/app/.venv"
+PYTHONPATH = "/app"

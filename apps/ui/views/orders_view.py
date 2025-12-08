@@ -141,7 +141,7 @@ class OrdersView:
         UI consistency after add/remove operations.
         """
         order = self.vm.get_order_by_id(order_id)
-        if not order or str(order.status).lower() in ["aberto", "fechado", "cancelado"]:
+        if not order or str(order.status).lower() in ["fechado", "cancelado"]:
             return
         t_label = getattr(order, "numero_mesa", getattr(order, "id_mesa", "?"))
         c_label = getattr(order, "nome_cliente", "Desconhecido")
