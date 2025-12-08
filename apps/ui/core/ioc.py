@@ -85,6 +85,7 @@ class DIContainer:
             customer_service=DIContainer._get_customer_service(),
             table_service=DIContainer._get_table_service(),
             staff_service=DIContainer._get_staff_service(),
+            menu_service=DIContainer._get_menu_service(),
         )
 
     @staticmethod

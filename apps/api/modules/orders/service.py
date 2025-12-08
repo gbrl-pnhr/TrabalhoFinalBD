@@ -78,7 +78,7 @@ class OrderService:
         order = await self.order_repo.get_order_details(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
-        if order.status != "OPEN":
+        if order.status != "ABERTO":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot add items to a {order.status} order.",
@@ -95,7 +95,6 @@ class OrderService:
 
         except Exception as e:
             logger.error(f"Service Error add_item_to_order: {e}")
-            # Ensure rollback is awaited
             await self.conn.rollback()
             raise e
 
@@ -104,7 +103,7 @@ class OrderService:
         order = await self.order_repo.get_order_details(order_id)
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
-        if order.status != "OPEN":
+        if order.status != "ABERTO":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot remove items from a closed order.",
@@ -123,7 +122,7 @@ class OrderService:
         if not order:
             raise HTTPException(status_code=404, detail="Order not found")
 
-        await self.order_repo.update_status(order_id, "CLOSED")
+        await self.order_repo.update_status(order_id, "FECHADO")
         return await self.get_order_details(order_id)
 
     async def _recalculate_total(self, order_id: int):

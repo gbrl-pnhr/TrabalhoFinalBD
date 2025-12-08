@@ -72,15 +72,15 @@ class OrdersView:
             st.session_state["flash_msg"] = {"type": "error", "text": str(e)}
 
     def _handle_add_item(self, order_id: int):
-        dish_key = f"add_dish_id_{order_id}"
+        dish_key = f"add_dish_sel_{order_id}"
         qty_key = f"add_qty_{order_id}"
-
         dish_id = st.session_state.get(dish_key)
         qty = st.session_state.get(qty_key)
-
+        if not dish_id:
+            st.toast("⚠️ Selecione um prato.")
+            return
         if self.vm.add_item_to_order(order_id, dish_id, qty):
             st.toast(f"✅ Item adicionado ao pedido #{order_id}")
-            st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -94,7 +94,6 @@ class OrdersView:
 
         if self.vm.remove_item_from_order(order_id, item_id):
             st.toast("✅ Item removido.")
-            st.rerun()
         else:
             st.toast(f"❌ {self.vm.last_error}")
 
@@ -125,26 +124,40 @@ class OrdersView:
             column_config={
                 "valor_total": st.column_config.NumberColumn(format="$%.2f"),
                 "id": st.column_config.NumberColumn("Order Nº", format="%d"),
+                "nome_cliente": "Cliente",
+                "numero_mesa": "Mesa",
             },
         )
         st.markdown("---")
         st.subheader("Gerenciar Pedidos")
         for order in orders:
-            self._render_order_card_fragment(order)
+            self._render_order_card_fragment(order.id)
 
     @st.fragment
-    def _render_order_card_fragment(self, order: OrderResponse):
+    def _render_order_card_fragment(self, order_id: int):
         """
         Renders a single order card.
-        Decorated with @st.fragment to enable granular re-rendering.
-        Crucial Optimization: Accepts the full 'order' object to avoid N+1 API calls.
+        Crucial Update: Fetches fresh data inside the fragment to ensure
+        UI consistency after add/remove operations.
         """
-        if not order or str(order.status).lower() in ['ABERTO', 'FECHADO', 'CANCELADO']:
+        order = self.vm.get_order_by_id(order_id)
+        if not order or str(order.status).lower() in ["aberto", "fechado", "cancelado"]:
             return
         t_label = getattr(order, "numero_mesa", getattr(order, "id_mesa", "?"))
-        label = f"📋 Pedido #{order.id} | Mesa {t_label} | R${order.valor_total:,.2f}"
+        c_label = getattr(order, "nome_cliente", "Desconhecido")
+        w_label = getattr(order, "nome_garcom", "Desconhecido")
+        label = f"📋 Pedido #{order.id} | Mesa {t_label} | {c_label}"
         with st.expander(label, expanded=False):
+            col_info1, col_info2 = st.columns(2)
+            with col_info1:
+                st.caption("Cliente")
+                st.write(f"**{c_label}**")
+            with col_info2:
+                st.caption("Garçom Responsável")
+                st.write(f"**{w_label}**")
+            st.divider()
             self._render_order_items_table(order)
+            st.markdown(f"**Total: R$ {order.valor_total:,.2f}**")
             st.divider()
             tab_add, tab_rem, tab_pay = st.tabs(
                 ["Adicionar Item", "Remover Item", "Pagar e Fechar"]
@@ -167,41 +180,54 @@ class OrdersView:
 
     def _render_order_items_table(self, order):
         """
-        Optimized rendering using native Python dictionaries and st.table.
-        Avoids Pandas overhead for small data fragments.
+        Render items using simple table.
         """
         if not order.itens:
             st.info("Nenhum item pedido ainda.")
             return
+
         items_data = [
             {
-                "Nome": i.nome_prato,
-                "Quantidade": i.quantidade,
-                "Preço": f"${i.preco_unitario:.2f}",
-                "Subtotal": f"${(i.preco_unitario * i.quantidade):.2f}",
+                "Prato": i.nome_prato,
+                "Qtd": i.quantidade,
+                "Preço Un.": f"R$ {i.preco_unitario:.2f}",
+                "Subtotal": f"R$ {(i.preco_unitario * i.quantidade):.2f}",
+                "Obs": i.observacoes or "-",
             }
             for i in order.itens
         ]
         st.table(items_data)
 
     def _render_add_item_form(self, order_id: int):
-        c1, c2, c3 = st.columns([2, 1, 1])
+        dish_options = self.vm.get_dish_options()
+
+        c1, c2 = st.columns([3, 1])
         with c1:
-            st.number_input(
-                "ID do Prato", min_value=1, step=1, key=f"add_dish_id_{order_id}"
+            st.selectbox(
+                "Escolher Prato",
+                options=dish_options.keys(),
+                format_func=lambda x: dish_options.get(x, "Desconhecido"),
+                key=f"add_dish_sel_{order_id}",
+                label_visibility="collapsed",
+                placeholder="Selecione um prato...",
             )
         with c2:
             st.number_input(
-                "Quantidade", min_value=1, step=1, value=1, key=f"add_qty_{order_id}"
+                "Qtd",
+                min_value=1,
+                step=1,
+                value=1,
+                key=f"add_qty_{order_id}",
+                label_visibility="collapsed",
             )
-        with c3:
-            st.write("")
-            st.button(
-                "Adicionar",
-                key=f"btn_add_{order_id}",
-                on_click=self._handle_add_item,
-                args=(order_id,),
-            )
+
+        st.button(
+            "➕ Adicionar",
+            key=f"btn_add_{order_id}",
+            on_click=self._handle_add_item,
+            args=(order_id,),
+            use_container_width=True,
+        )
 
     def _render_remove_item_form(self, order):
         if not order.itens:
@@ -227,6 +253,7 @@ class OrdersView:
                 key=f"btn_del_{order.id}",
                 on_click=self._handle_remove_item,
                 args=(order.id,),
+                use_container_width=True,
             )
 
     def _render_create_order_tab(self):
@@ -257,7 +284,10 @@ class OrdersView:
                 if not options.tables:
                     st.warning("Nenhuma mesa disponível.")
                     st.selectbox(
-                        "Escolher Mesa", options=[], disabled=True, key="new_order_table"
+                        "Escolher Mesa",
+                        options=[],
+                        disabled=True,
+                        key="new_order_table",
                     )
                 else:
                     st.selectbox(

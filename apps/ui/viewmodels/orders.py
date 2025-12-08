@@ -10,6 +10,7 @@ from apps.ui.services.order import OrderService
 from apps.ui.services.customers import CustomerService
 from apps.ui.services.tables import TableService
 from apps.ui.services.staff import StaffService
+from apps.ui.services.menu import MenuService
 from apps.ui.utils.exceptions import AppError
 
 
@@ -29,17 +30,21 @@ class OrdersViewModel:
         customer_service: CustomerService,
         table_service: TableService,
         staff_service: StaffService,
+        menu_service: MenuService,
     ):
         self._order_service = order_service
         self._customer_service = customer_service
         self._table_service = table_service
         self._staff_service = staff_service
+        self._menu_service = menu_service
         self.active_orders: List[OrderResponse] = []
+        self._order_cache: Dict[int, OrderResponse] = {}
         self.last_error: Optional[str] = None
 
     def load_active_orders(self) -> None:
         """Fetches orders that are not closed/paid."""
         self.last_error = None
+        self._order_cache.clear()
         try:
             all_orders = self._order_service.list_orders()
             self.active_orders = [
@@ -48,18 +53,42 @@ class OrdersViewModel:
                 if str(o.status).upper() not in ["FECHADO", "CANCELADO"]
             ]
             self.active_orders.sort(key=lambda x: x.id, reverse=True)
+            for order in self.active_orders:
+                self._order_cache[order.id] = order
         except AppError as e:
             self.last_error = str(e)
 
     def get_order_by_id(self, order_id: int) -> Optional[OrderResponse]:
         """
         Fetches the latest state of a single order.
-        Used by fragments to refresh specific cards without reloading the whole list.
+        Strategy:
+        1. Check local cache (populated by list_orders) to avoid N+1 on initial load.
+        2. If missing (invalidated by update), fetch from API.
         """
+        if order_id in self._order_cache:
+            return self._order_cache[order_id]
         try:
-            return self._order_service.get_order_details(order_id)
+            order = self._order_service.get_order_details(order_id)
+            self._order_cache[order_id] = order
+            return order
         except AppError:
             return None
+
+    def _invalidate_cache(self, order_id: int):
+        """Forces the next get_order_by_id call to hit the API."""
+        if order_id in self._order_cache:
+            del self._order_cache[order_id]
+
+    def get_dish_options(self) -> Dict[int, str]:
+        """
+        Fetches dishes to populate the Add Item dropdown.
+        Returns: {id: "Name ($Price)"}
+        """
+        try:
+            dishes = self._menu_service.get_dishes()
+            return {d.id: f"{d.nome} (${d.preco:.2f})" for d in dishes}
+        except AppError:
+            return {}
 
     def get_new_order_options(self) -> NewOrderOptions:
         """
@@ -118,6 +147,7 @@ class OrdersViewModel:
                 quantidade_cliente=count,
             )
             self._order_service.create_order(payload)
+            # No cache invalidation needed here as the whole page usually reruns on creation
             return True
         except (AppError, ValueError) as e:
             self.last_error = str(e)
@@ -132,6 +162,7 @@ class OrdersViewModel:
         try:
             item = OrderItemCreate(id_prato=dish_id, quantidade=quantity)
             self._order_service.add_item(order_id, item)
+            self._invalidate_cache(order_id)
             return True
         except AppError as e:
             self.last_error = str(e)
@@ -141,6 +172,7 @@ class OrdersViewModel:
         self.last_error = None
         try:
             self._order_service.remove_item(order_id, item_id)
+            self._invalidate_cache(order_id)
             return True
         except AppError as e:
             self.last_error = str(e)
@@ -150,6 +182,7 @@ class OrdersViewModel:
         self.last_error = None
         try:
             self._order_service.close_order(order_id)
+            self._invalidate_cache(order_id)
             return True
         except AppError as e:
             self.last_error = str(e)
