@@ -12,15 +12,15 @@ class CustomersView:
         self.vm = view_model
 
     def render(self):
-        st.title("👥 Customer Directory")
-        st.markdown("Manage your loyal customer base here.")
+        st.title("👥 Diretório de Clientes")
+        st.markdown("Gerencie aqui sua base de clientes leais.")
 
         self.vm.load_customers()
 
         if self.vm.last_error:
-            st.error(f"System Alert: {self.vm.last_error}")
+            st.error(f"Alerta de Sistema: {self.vm.last_error}")
 
-        tab_list, tab_create = st.tabs(["Directory", "Register New"])
+        tab_list, tab_create = st.tabs(["Diretório", "Novo Cliente"])
 
         with tab_list:
             self._render_directory_tab()
@@ -30,8 +30,8 @@ class CustomersView:
 
     def _render_directory_tab(self):
         if not self.vm.customers:
-            st.info("No customers registered yet.")
-            if st.button("🔄 Refresh"):
+            st.info("Nenhum cliente registrado ainda.")
+            if st.button("🔄 Recarregar"):
                 st.rerun()
             return
 
@@ -47,32 +47,32 @@ class CustomersView:
             column_config={
                 "id": st.column_config.NumberColumn("ID", format="%d"),
                 "nome": "Nome Completo",
-                "email": "Endereco de Email",
+                "email": "Endereço de Email",
                 "telefone": "Telefone",
             },
         )
 
-        if st.button("Refresh Directory"):
+        if st.button("Recarregar Diretório"):
             st.rerun()
 
     def _render_create_tab(self):
-        st.subheader("Register New Customer")
+        st.subheader("Registrar Novo Cliente")
 
         with st.form("create_customer_form"):
             col1, col2 = st.columns(2)
             with col1:
                 name = st.text_input("Nome Completo")
-                email = st.text_input("Endereco de Email")
+                email = st.text_input("Endereço de Email")
             with col2:
                 phone = st.text_input("Telefone (Opcional)")
 
-            submitted = st.form_submit_button("Cadastrar Cliente", width="stretch")
+            submitted = st.form_submit_button("Registrar Cliente", width="stretch")
 
             if submitted:
                 form_data = CustomerFormData(name=name, email=email, phone=phone)
 
                 if self.vm.create_customer(form_data):
-                    st.toast(f"✅ Customer '{name}' registered successfully!")
+                    st.toast(f"✅ Cliente '{name}' registrado com sucesso!")
                     st.rerun()
                 else:
                     st.error(self.vm.last_error)

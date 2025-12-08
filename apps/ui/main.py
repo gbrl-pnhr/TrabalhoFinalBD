@@ -31,7 +31,7 @@ pages_structure = {
         st.Page("pages/6_Tables.py", title="Posição das Mesas", icon="🪑"),
         st.Page("pages/4_Staff.py", title="Funcionários", icon="👨‍🍳"),
         st.Page("pages/5_Customers.py", title="Clientes", icon="👥"),
-        st.Page("pages/7_Reviews.py", title="Avalizações", icon="⭐"),
+        st.Page("pages/7_Reviews.py", title="Feedback", icon="⭐"),
     ]
 }
 
