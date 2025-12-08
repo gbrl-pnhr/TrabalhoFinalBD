@@ -24,7 +24,7 @@ class OrdersView:
         if self.vm.last_error:
             st.error(f"Erro carregando pedidos: {self.vm.last_error}")
 
-        tab_list, tab_create = st.tabs(["Pedidos Ativos", "Nova Pedido"])
+        tab_list, tab_create = st.tabs(["Pedidos Ativos", "Novo Pedido"])
 
         with tab_list:
             self._render_active_orders_tab()
@@ -61,7 +61,7 @@ class OrdersView:
             if self.vm.create_order(c_id, t_id, w_id, count):
                 st.session_state["flash_msg"] = {
                     "type": "success",
-                    "text": "Mesa adicionada com sucesso!",
+                    "text": "Pedido feito com sucesso!",
                 }
             else:
                 st.session_state["flash_msg"] = {
