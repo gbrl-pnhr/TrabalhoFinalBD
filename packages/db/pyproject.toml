@@ -1,7 +1,7 @@
 [project]
 name = "db"
 version = "1.0.0"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "common",
     "typer>=0.12.5",

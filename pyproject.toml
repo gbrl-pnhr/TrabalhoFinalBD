@@ -3,7 +3,7 @@ name = "RestauranteBD"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.124.0",
     "psycopg[binary,pool]>=3.3.1",

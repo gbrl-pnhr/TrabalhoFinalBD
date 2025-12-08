@@ -1,0 +1,63 @@
+services:
+  # --- 1. Database ---
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaurante
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # --- 2. API Service ---
+  api:
+    build: .
+    # Keep using uv run
+    command: uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: restaurante
+      API_BASE_URL: http://api:8000/api/v1
+      API_TIMEOUT: 30
+      PAGE_TITLE: "Sistema de Restaurante"
+      PROJECT_NAME: "RestauranteBD"
+      DATABASE_URL: postgresql://postgres:password@db:5432/restaurante
+    volumes:
+      - .:/app
+      - /app/.venv  # <--- ADD THIS LINE (Fixes the I/O error)
+
+  # --- 3. Frontend Service ---
+  front:
+    build: .
+    # Change this command to use 'uv run'
+    command: uv run streamlit run apps/ui/main.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    environment:
+      API_BASE_URL: http://api:8000/api/v1
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: restaurante
+      API_TIMEOUT: 30
+      PAGE_TITLE: "Sistema de Restaurante"
+      PROJECT_NAME: "RestauranteBD"
+    volumes:
+      - .:/app
+      - /app/.venv  # <--- ADD THIS LINE (Fixes the I/O error)
+
+volumes:
+  postgres_data:
